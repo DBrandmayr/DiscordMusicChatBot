@@ -1,0 +1,22 @@
+bot:
+  token: "TOKEN_HERE"
+  prefixes:
+    - "!"
+    - "hi bot"
+  maxChatHistoryLength: 50
+
+lavalink:
+  host: "localhost"
+  port: 2333
+  password: "youshallnotpass"
+
+openai:
+  key: "KEY_HERE"
+  model: "gpt-4.1"
+
+chatbot:
+  enabled: true
+  systemPrompt: |
+    You are a helpful and friendly Discord bot assistant.
+    Answer questions, help with tasks, and keep the conversation fun and engaging.
+    Keep your responses concise and appropriate for a Discord server.
