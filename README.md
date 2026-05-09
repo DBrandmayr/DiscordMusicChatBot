@@ -26,20 +26,13 @@ It requires a connection to a [Lavalink](https://github.com/lavalink-devs/Lavali
 - A running and configured (preferably with [YouTube support](https://github.com/lavalink-devs/youtube-source)) [Lavalink](https://github.com/lavalink-devs/Lavalink) server
 - An [OpenAI API key](https://platform.openai.com/api-keys)
 
-## Setup
+## Quick Start (Recommended)
 
-**1. Clone the repository**
-```bash
-git clone https://github.com/DBrandmayr/DiscordMusicChatBot.git
-cd DiscordMusicChatBot
-```
+Download the latest release from the GitHub Releases page.
 
-**2. Create the config file**
+### 1. Create the config file
 
 Copy the example config and fill in your credentials:
-```bash
-cp config-example.yml config.yml
-```
 
 ```yaml
 bot:
@@ -63,18 +56,49 @@ chatbot:
   systemPrompt: "You are a helpful and friendly Discord bot assistant."
 ```
 
-**3. Build**
+### 2. Run the bot
+
+```bash
+java -jar dmcbot.jar
+```
+
+`config.yml` is assumed to be in the working directory.  
+If it's located somewhere else, you can specify the path as the first argument.
+
+Example:
+
+```bash
+java -jar dmcbot.jar /path/to/config.yml
+```
+
+---
+
+## Building from Source
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/DBrandmayr/DiscordMusicChatBot.git
+cd DiscordMusicChatBot
+```
+
+### 2. Build the project
+
 ```bash
 ./gradlew shadowJar
 ```
 
-**4. Run**
-```bash
-java -jar build/jars/dmcbot.jar 
+The built JAR will be located in:
+
+```txt
+build/libs/
 ```
 
-`config.yml` is assumed to be in the working directory, if that's not the case, you can specify the path as the first argument.
+### 3. Run the built JAR
 
+```bash
+java -jar build/libs/dmcbot.jar
+```
 ## Commands
 
 Commands are triggered by any configured prefix (e.g. `!play lo-fi` or `hi bot play lo-fi`).  
