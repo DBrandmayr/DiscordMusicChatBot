@@ -1,6 +1,5 @@
 package io.github.dbrandmayr.bot.musicbot
 
-import io.github.dbrandmayr.bot.getMusicManager
 import dev.arbjerg.lavalink.protocol.v4.LoadResult
 import dev.arbjerg.lavalink.protocol.v4.Track
 import dev.kord.core.event.message.MessageCreateEvent
@@ -28,7 +27,7 @@ object PlayCommand : Command {
             return
         }
 
-        val musicManager = getMusicManager(guildId)
+        val musicManager = LavalinkManager.getMusicManager(guildId)
         val link = musicManager.link
         if (link.state != Link.State.CONNECTED) link.connectAudio(voiceChannelId.value)
 
@@ -95,7 +94,7 @@ object StopCommand : Command {
     override val description = "Stops playback and clears the queue"
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
-        getMusicManager(getGuildId(event)).stop()
+        LavalinkManager.getMusicManager(getGuildId(event)).stop()
         event.message.channel.createMessage("Stopped and cleared the queue.")
     }
 }
@@ -106,7 +105,7 @@ object LeaveCommand : Command {
     override val description = "Leaves the voice channel"
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
-        val musicManager = getMusicManager(getGuildId(event))
+        val musicManager = LavalinkManager.getMusicManager(getGuildId(event))
         musicManager.stop()
         musicManager.link.destroy()
         event.message.channel.createMessage("Goodbye!")
@@ -121,7 +120,7 @@ object SkipCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val musicManager = getMusicManager(getGuildId(event))
+        val musicManager = LavalinkManager.getMusicManager(getGuildId(event))
         val track = musicManager.currentTrack
         if (track != null) {
             channel.createMessage("Skipped: \"***${track.info.title}***\"")
@@ -140,7 +139,7 @@ object PlayingCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val musicManager = getMusicManager(getGuildId(event))
+        val musicManager = LavalinkManager.getMusicManager(getGuildId(event))
         val playingTrack = musicManager.currentTrack ?: run {
             channel.createMessage("Nothing is currently playing.")
             return
@@ -159,7 +158,7 @@ object ReplayCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val musicManager = getMusicManager(getGuildId(event))
+        val musicManager = LavalinkManager.getMusicManager(getGuildId(event))
         val replayTrack: Track = musicManager.replayTrack ?: run {
             channel.createMessage("No track has been played yet.")
             return
@@ -195,7 +194,7 @@ object SeekCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val musicManager = getMusicManager(getGuildId(event))
+        val musicManager = LavalinkManager.getMusicManager(getGuildId(event))
 
         if (!isUserInSameChannel(event, musicManager.link)) {
             channel.createMessage("You need to be in the same voice channel as the bot.")
@@ -239,7 +238,7 @@ object VolumeCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val musicManager = getMusicManager(getGuildId(event))
+        val musicManager = LavalinkManager.getMusicManager(getGuildId(event))
 
         if (!isUserInSameChannel(event, musicManager.link)) {
             channel.createMessage("You need to be in the same voice channel as the bot.")

@@ -3,14 +3,14 @@ package io.github.dbrandmayr.bot.chatbot
 import io.github.dbrandmayr.bot.Config
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import tools.jackson.databind.DeserializationFeature
-import tools.jackson.module.kotlin.readValue
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import tools.jackson.databind.DeserializationFeature
 import tools.jackson.module.kotlin.jsonMapper
 import tools.jackson.module.kotlin.kotlinModule
+import tools.jackson.module.kotlin.readValue
 
 data class ChatCompletionRequest(
     val model: String,

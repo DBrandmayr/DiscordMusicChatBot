@@ -1,6 +1,5 @@
 package io.github.dbrandmayr.bot.musicbot
 
-import io.github.dbrandmayr.bot.getMusicManager
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.entity.Guild
 import dev.kord.core.event.message.MessageCreateEvent
@@ -21,7 +20,7 @@ suspend fun getGuild(event: MessageCreateEvent): Guild =
 suspend fun getGuildId(event: MessageCreateEvent): Snowflake = getGuild(event).id
 
 suspend fun getPlayer(event: MessageCreateEvent): Player =
-    getMusicManager(getGuildId(event)).player
+    LavalinkManager.getMusicManager(getGuildId(event)).player
 
 suspend fun isUserInSameChannel(event: MessageCreateEvent, link: Link): Boolean {
     val userVoiceChannelId = event.member?.getVoiceStateOrNull()?.channelId ?: return false

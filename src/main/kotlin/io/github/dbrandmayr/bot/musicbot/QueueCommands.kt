@@ -1,6 +1,5 @@
 package io.github.dbrandmayr.bot.musicbot
 
-import io.github.dbrandmayr.bot.getMusicManager
 import dev.arbjerg.lavalink.protocol.v4.LoadResult
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageCreateEvent
@@ -16,7 +15,7 @@ object QueueCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val queue = getMusicManager(getGuildId(event)).getQueueSnapshot()
+        val queue = LavalinkManager.getMusicManager(getGuildId(event)).getQueueSnapshot()
         if (queue.isEmpty()) {
             channel.createMessage("The queue is currently empty.")
             return
@@ -36,7 +35,7 @@ object ShuffleCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val musicManager = getMusicManager(getGuildId(event))
+        val musicManager = LavalinkManager.getMusicManager(getGuildId(event))
         if (musicManager.trackQueue.isEmpty()) {
             channel.createMessage("The queue is currently empty.")
             return
@@ -54,7 +53,7 @@ object InsertCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val musicManager = getMusicManager(getGuildId(event))
+        val musicManager = LavalinkManager.getMusicManager(getGuildId(event))
 
         if (!isUserInSameChannel(event, musicManager.link)) {
             channel.createMessage("You need to be in the same voice channel as the bot.")
@@ -106,7 +105,7 @@ object RemoveCommand : Command {
             channel.createMessage("Please provide a valid position number.")
             return
         }
-        val trackQueue = getMusicManager(getGuildId(event)).trackQueue
+        val trackQueue = LavalinkManager.getMusicManager(getGuildId(event)).trackQueue
         if (removeNumber <= 0) {
             channel.createMessage("Position must be greater than 0.")
             return

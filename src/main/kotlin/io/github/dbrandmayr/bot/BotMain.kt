@@ -1,41 +1,25 @@
 package io.github.dbrandmayr.bot
 
-import io.github.dbrandmayr.bot.chatbot.ChatBotMessage
-import io.github.dbrandmayr.bot.chatbot.ChatGptClient
-import io.github.dbrandmayr.bot.chatbot.handleChatRequest
-import io.github.dbrandmayr.bot.chatbot.memory.initDatabase
-import io.github.dbrandmayr.bot.chatbot.memory.loadAllChatHistories
-import io.github.dbrandmayr.bot.chatbot.memory.persistMessage
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
 import dev.kord.gateway.PrivilegedIntent
-import dev.schlaubi.lavakord.LavaKord
 import dev.schlaubi.lavakord.kord.lavakord
-import dev.schlaubi.lavakord.kord.getLink
-import io.github.dbrandmayr.bot.musicbot.Command
-import io.github.dbrandmayr.bot.musicbot.GuildMusicManager
-import io.github.dbrandmayr.bot.musicbot.HelpCommand
-import io.github.dbrandmayr.bot.musicbot.funCommands
-import io.github.dbrandmayr.bot.musicbot.musicCommands
-import io.github.dbrandmayr.bot.musicbot.queueCommands
-import java.net.ConnectException
-import java.net.InetSocketAddress
-import java.net.Socket
-import kotlin.time.Duration.Companion.seconds
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import io.github.dbrandmayr.bot.chatbot.ChatBotMessage
+import io.github.dbrandmayr.bot.chatbot.ChatGptClient
+import io.github.dbrandmayr.bot.chatbot.handleChatRequest
+import io.github.dbrandmayr.bot.chatbot.memory.initDatabase
+import io.github.dbrandmayr.bot.chatbot.memory.loadAllChatHistories
+import io.github.dbrandmayr.bot.chatbot.memory.persistMessage
+import io.github.dbrandmayr.bot.musicbot.*
 
-lateinit var lavalink: LavaKord private set
+
 lateinit var chatClient: ChatGptClient private set
 lateinit var botSystemPrompt: String private set
 lateinit var prefixes: Set<String> private set
 
-val guildMusicManagers = mutableMapOf<Snowflake, GuildMusicManager>()
 val guildChatHistories = mutableMapOf<Snowflake, MutableList<ChatBotMessage>>()
 
 val commands: List<Command> = funCommands + musicCommands + queueCommands + listOf(HelpCommand)
@@ -52,10 +36,8 @@ suspend fun main(args: Array<String>) {
     println("Chat histories loaded from database.")
 
     val kord = Kord(config.bot.token)
-    lavalink = kord.lavakord()
-
-    connectToLavalinkWithRetry(
-        lavalink,
+    LavalinkManager.initialize(kord.lavakord())
+    LavalinkManager.connect(
         host = config.lavalink.host,
         port = config.lavalink.port,
         password = config.lavalink.password
@@ -97,30 +79,6 @@ suspend fun main(args: Array<String>) {
     }
 }
 
-private fun connectToLavalinkWithRetry(lavalink: LavaKord, host: String, port: Int, password: String) {
-    CoroutineScope(Dispatchers.IO).launch {
-        repeat(15) { attempt ->
-            try {
-                Socket().use { it.connect(InetSocketAddress(host, port), 1000) }
-                lavalink.addNode("ws://$host:$port", password)
-                println("Connected to Lavalink.")
-                return@launch
-            } catch (_: ConnectException) {
-                val waitSeconds = (attempt + 1) * 4
-                println("Lavalink not ready, retrying in ${waitSeconds}s... (${attempt + 1}/15)")
-                delay(waitSeconds.seconds)
-            }
-        }
-        println("Could not connect to Lavalink after 15 attempts.")
-    }
-}
-
-fun getMusicManager(guildId: Snowflake): GuildMusicManager {
-    val link = lavalink.getLink(guildId)
-    return guildMusicManagers.getOrPut(guildId) {
-        GuildMusicManager(link)
-    }
-}
 
 fun getChatHistory(guildId: Snowflake): List<ChatBotMessage>? {
     return guildChatHistories[guildId]?.toList()

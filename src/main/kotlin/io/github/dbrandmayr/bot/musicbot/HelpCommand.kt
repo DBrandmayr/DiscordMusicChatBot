@@ -1,8 +1,8 @@
 package io.github.dbrandmayr.bot.musicbot
 
-import io.github.dbrandmayr.bot.commands
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageCreateEvent
+import io.github.dbrandmayr.bot.commands
 
 object HelpCommand : Command {
     override val name = "help"

@@ -1,8 +1,8 @@
 package io.github.dbrandmayr.bot.musicbot
 
 import dev.kord.core.event.message.MessageCreateEvent
-import kotlin.random.Random
 import kotlinx.coroutines.delay
+import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
 
 private const val CATEGORY = "🎲 Fun Commands"

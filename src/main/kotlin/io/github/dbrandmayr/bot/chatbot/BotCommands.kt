@@ -2,11 +2,11 @@ package io.github.dbrandmayr.bot.chatbot
 
 import io.github.dbrandmayr.bot.musicbot.Command
 import io.github.dbrandmayr.bot.musicbot.getGuildId
-import io.github.dbrandmayr.bot.getMusicManager
 import dev.arbjerg.lavalink.protocol.v4.LoadResult
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.schlaubi.lavakord.audio.Link
 import dev.schlaubi.lavakord.rest.loadItem
+import io.github.dbrandmayr.bot.musicbot.LavalinkManager
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -33,7 +33,7 @@ class PlayBotCommand : Command {
             channel.createMessage("You need to be in the same voice channel as the bot.")
             return
         }
-        val musicManager = getMusicManager(guildId)
+        val musicManager = LavalinkManager.getMusicManager(guildId)
         val link = musicManager.link
         if (link.state != Link.State.CONNECTED){
             link.connectAudio(voiceChannelId.value)
