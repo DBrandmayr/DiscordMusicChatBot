@@ -1,11 +1,14 @@
 package io.github.dbrandmayr.bot.musicbot
 
 import dev.arbjerg.lavalink.protocol.v4.LoadResult
+import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.schlaubi.lavakord.rest.loadItem
 
 private const val CATEGORY = "🗂️ Queue Commands"
+
+private fun getMusicManager(guildId: Snowflake) = LavalinkManager.getMusicManager(guildId)
 
 object QueueCommand : Command {
     override val name = "queue"
@@ -15,7 +18,7 @@ object QueueCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val queue = LavalinkManager.getMusicManager(getGuildId(event)).getQueueSnapshot()
+        val queue = getMusicManager(getGuildId(event)).getQueueSnapshot()
         if (queue.isEmpty()) {
             channel.createMessage("The queue is currently empty.")
             return
@@ -35,7 +38,7 @@ object ShuffleCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val musicManager = LavalinkManager.getMusicManager(getGuildId(event))
+        val musicManager = getMusicManager(getGuildId(event))
         if (musicManager.trackQueue.isEmpty()) {
             channel.createMessage("The queue is currently empty.")
             return
@@ -53,7 +56,7 @@ object InsertCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val musicManager = LavalinkManager.getMusicManager(getGuildId(event))
+        val musicManager = getMusicManager(getGuildId(event))
 
         if (!isUserInSameChannel(event, musicManager.link)) {
             channel.createMessage("You need to be in the same voice channel as the bot.")
@@ -105,7 +108,7 @@ object RemoveCommand : Command {
             channel.createMessage("Please provide a valid position number.")
             return
         }
-        val trackQueue = LavalinkManager.getMusicManager(getGuildId(event)).trackQueue
+        val trackQueue = getMusicManager(getGuildId(event)).trackQueue
         if (removeNumber <= 0) {
             channel.createMessage("Position must be greater than 0.")
             return
