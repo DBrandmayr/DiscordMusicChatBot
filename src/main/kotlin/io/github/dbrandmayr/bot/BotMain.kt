@@ -15,7 +15,6 @@ import io.github.dbrandmayr.bot.chatbot.memory.loadAllChatHistories
 import io.github.dbrandmayr.bot.chatbot.memory.persistMessage
 import io.github.dbrandmayr.bot.musicbot.*
 
-
 lateinit var chatClient: ChatGptClient private set
 lateinit var botSystemPrompt: String private set
 lateinit var prefixes: Set<String> private set
@@ -42,7 +41,6 @@ suspend fun main(args: Array<String>) {
         port = config.lavalink.port,
         password = config.lavalink.password
     )
-
 
     kord.on<MessageCreateEvent> {
         val channel = message.channel
@@ -78,7 +76,6 @@ suspend fun main(args: Array<String>) {
         intents += Intent.MessageContent
     }
 }
-
 
 fun getChatHistory(guildId: Snowflake): List<ChatBotMessage>? {
     return guildChatHistories[guildId]?.toList()
