@@ -20,6 +20,15 @@ object LavalinkManager {
         this.lavalink = lavalink
     }
 
+
+    /**
+     * Establishes a connection to a Lavalink node using the specified host, port, and password.
+     * If the connection fails, it will retry up to 15 times with increasing delays between attempts.
+     *
+     * @param host The hostname or IP address of the Lavalink node.
+     * @param port The port on which the Lavalink node is listening.
+     * @param password The password used for authentication with the Lavalink node.
+     */
     fun connect(host: String, port: Int, password: String) {
         CoroutineScope(Dispatchers.IO).launch {
             repeat(15) { attempt ->
