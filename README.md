@@ -91,13 +91,13 @@ cd DiscordMusicChatBot
 The built JAR will be located in:
 
 ```txt
-build/libs/
+build/jars/
 ```
 
 ### 3. Run the built JAR
 
 ```bash
-java -jar build/libs/dmcbot.jar
+java -jar build/jars/dmcbot.jar
 ```
 ## Commands
 
