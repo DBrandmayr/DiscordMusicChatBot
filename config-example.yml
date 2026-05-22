@@ -13,6 +13,7 @@ lavalink:
 openai:
   key: "KEY_HERE"
   model: "gpt-4.1"
+  # baseUrl: "https://api.openai.com" # Change if you want to use another OpenAI-compatible API, e.g. LM Studio
 
 chatbot:
   enabled: true

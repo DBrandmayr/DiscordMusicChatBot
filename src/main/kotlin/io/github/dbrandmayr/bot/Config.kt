@@ -40,7 +40,10 @@ data class LavalinkConfig(
 data class OpenaiConfig(
     val key: String = "",
     val model: String = "gpt-4.1"
-)
+) {
+    var baseUrl: String = "https://api.openai.com"
+        set(value) { field = value.trim().trimEnd('/') }
+}
 
 data class ChatbotConfig(
     val enabled: Boolean = true,
