@@ -1,13 +1,13 @@
 # Discord Music ChatBot
 
 A self-hosted Discord music and AI chat bot.  
-It requires a connection to a [Lavalink](https://github.com/lavalink-devs/Lavalink) server for audio playback and an OpenAI API key for AI chat responses.
+It requires a connection to a [Lavalink](https://github.com/lavalink-devs/Lavalink) server for audio playback and access to an OpenAI-compatible API for AI chat responses.
 
 ## Features
 
 - **Music playback** – play tracks and playlists from YouTube or other platforms that [Lavalink](https://github.com/lavalink-devs/Lavalink) supports
 - **Music Queue Management** – queue tracks, shuffle, insert, and remove tracks from the queue
-- **AI chat** – conversational responses powered by OpenAI, including the ability to queue music through natural language
+- **AI chat** – conversational responses via any OpenAI-compatible API, including the ability to queue music through natural language
 - **Persistent chat history** – per-guild conversation history stored in SQLite, restored on restart
 - **Configurable** – prefixes, AI model, system prompt, and more via a YAML config file
 
@@ -17,14 +17,14 @@ It requires a connection to a [Lavalink](https://github.com/lavalink-devs/Lavali
 - [Kord](https://github.com/kordlib/kord) – Discord API client
 - [Lavalink.kt](https://github.com/kordlib/Lavalink.kt) + [Lavalink](https://github.com/lavalink-devs/Lavalink) – music search and audio playback
 - [Exposed](https://github.com/JetBrains/Exposed) + SQLite – chat history persistence
-- [OpenAI API](https://platform.openai.com/docs) – AI chat responses
+- OpenAI-compatible API (e.g. [OpenAI](https://platform.openai.com/docs), [Google Gemini](https://ai.google.dev/gemini-api/docs), [LM Studio](https://lmstudio.ai)) – AI chat responses
 
 ## Prerequisites
 
 - JDK 21+
 - A [Discord bot token](https://discord.com/developers/applications)
-- A running and configured (preferably with [YouTube support](https://github.com/lavalink-devs/youtube-source)) [Lavalink](https://github.com/lavalink-devs/Lavalink) server
-- An [OpenAI API key](https://platform.openai.com/api-keys)
+- **For music playback:** A running and configured (preferably with [YouTube support](https://github.com/lavalink-devs/youtube-source)) [Lavalink](https://github.com/lavalink-devs/Lavalink) server
+- **For AI chat:** Access to an OpenAI-compatible API (can be disabled in the config)
 
 ## Quick Start (Recommended)
 
@@ -32,29 +32,7 @@ Download the latest release from the GitHub Releases page.
 
 ### 1. Create the config file
 
-Copy the example config and fill in your credentials:
-
-```yaml
-bot:
-  token: "YOUR_DISCORD_TOKEN"
-  prefixes:
-    - "!"
-    - "hi bot"
-  maxChatHistoryLength: 50
-
-lavalink:
-  host: "localhost"
-  port: 2333
-  password: "youshallnotpass"
-
-openai:
-  key: "YOUR_OPENAI_API_KEY"
-  model: "gpt-4.1"
-
-chatbot:
-  enabled: true
-  systemPrompt: "You are a helpful and friendly Discord bot assistant."
-```
+Copy [`config-example.yml`](config-example.yml) to `config.yml` and fill in your credentials.
 
 ### 2. Run the bot
 

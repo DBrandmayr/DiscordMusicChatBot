@@ -39,7 +39,7 @@ class ChatGptClient(private val apiKey: String) {
     }
 
     suspend fun sendMessage(messages: List<ChatBotMessage>): String {
-        val url = "${Config.instance.openai.baseUrl}/v1/chat/completions"
+        val url = Config.instance.openai.completionsUrl
         val requestBody = objectMapper.writeValueAsString(
             ChatCompletionRequest(
                 model = Config.instance.openai.model,

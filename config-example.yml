@@ -13,7 +13,9 @@ lavalink:
 openai:
   key: "KEY_HERE"
   model: "gpt-4.1"
-  # baseUrl: "https://api.openai.com" # Change if you want to use another OpenAI-compatible API, e.g. LM Studio
+#  completionsUrl: "https://api.openai.com/v1/chat/completions"  # default
+#  completionsUrl: "http://127.0.0.1:1234/v1/chat/completions"   # LM Studio
+#  completionsUrl: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"  # Gemini
 
 chatbot:
   enabled: true

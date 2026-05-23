@@ -22,34 +22,26 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
 
     val systemMessage = getSystemMessage(botSystemPrompt)
 
-
     val userMessage = formatMessage(message) ?: return
-
-
-    if (!addToChatHistory(guildId, ChatBotMessage(role = "user", content = userMessage))) {
-        println("Returned at adding message to history while handling chat request")
-        return
-    }
-
 
     val chatHistory = getChatHistory(guildId) ?: run {
         println("Returned at getting chat history while handling chat request")
         return
     }
 
-    val queryMessages = mutableListOf(
-        ChatBotMessage(role = "system", content = systemMessage),
-    )
+    val queryMessages = mutableListOf(ChatBotMessage(role = "system", content = systemMessage))
     queryMessages.addAll(chatHistory)
+    queryMessages.add(ChatBotMessage(role = "user", content = userMessage))
 
     try {
         val response = chatClient.sendMessage(queryMessages)
+        addToChatHistory(guildId, ChatBotMessage("user", userMessage))
         addToChatHistory(guildId, ChatBotMessage("assistant", response))
         val convResponse = resolveAndExecuteResponseCommands(response, event)
         channel.createMessage(convResponse)
     } catch (e: Exception) {
-        channel.createMessage("Something went wrong. Please try again.")
-        println("Error with ChatGPT: ${e.message}")
+        channel.createMessage("I wasn't able to respond to that. Please try again.")
+        println("Chat API error: ${e.message}")
     }
 }
 
