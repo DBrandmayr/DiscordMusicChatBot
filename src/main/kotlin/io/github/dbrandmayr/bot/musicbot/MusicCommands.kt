@@ -1,6 +1,7 @@
 package io.github.dbrandmayr.bot.musicbot
 
 import dev.arbjerg.lavalink.protocol.v4.LoadResult
+import io.github.dbrandmayr.bot.formatDuration
 import dev.arbjerg.lavalink.protocol.v4.Track
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.event.message.MessageCreateEvent
@@ -148,8 +149,7 @@ object PlayingCommand : Command {
             return
         }
         val livePosition = musicManager.link.player.position
-        val fmt = { ms: Long -> "%02d:%02d".format(ms / 1000 / 60, ms / 1000 % 60) }
-        channel.createMessage("Now playing: \"**${playingTrack.info.title}**\"\n*${fmt(livePosition)} / ${fmt(playingTrack.info.length)}*")
+        channel.createMessage("Now playing: \"**${playingTrack.info.title}**\"\n*${formatDuration(livePosition)} / ${formatDuration(playingTrack.info.length)}*")
     }
 }
 
@@ -220,7 +220,7 @@ object SeekCommand : Command {
             return
         }
         musicManager.link.player.seekTo(timeMillis)
-        channel.createMessage("Seeked to **${"%02d:%02d".format(timeMillis / 1000 / 60, timeMillis / 1000 % 60)}**.")
+        channel.createMessage("Seeked to **${formatDuration(timeMillis)}**.")
     }
 
     private fun parseTimeToMillis(time: String): Long? = try {

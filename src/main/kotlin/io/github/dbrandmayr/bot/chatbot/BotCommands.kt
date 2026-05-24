@@ -1,11 +1,11 @@
 package io.github.dbrandmayr.bot.chatbot
 
-import io.github.dbrandmayr.bot.musicbot.Command
 import io.github.dbrandmayr.bot.musicbot.getGuildId
 import dev.arbjerg.lavalink.protocol.v4.LoadResult
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.schlaubi.lavakord.audio.Link
 import dev.schlaubi.lavakord.rest.loadItem
+import io.github.dbrandmayr.bot.formatAddedTracks
 import io.github.dbrandmayr.bot.musicbot.LavalinkManager
 import kotlinx.serialization.Serializable
 
@@ -15,58 +15,64 @@ data class BotCommandClass(
     val args: List<String>
 )
 
+interface BotCommand{
+    val name: String
+    suspend fun execute(args: List<String>, event: MessageCreateEvent): String?
+}
 
-
-class PlayBotCommand : Command {
+class PlayBotCommand : BotCommand {
     override val name: String = "play"
-    override val category: String = "internal"
-    override val description: String = "internal"
-    override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
+    override suspend fun execute(args: List<String>, event: MessageCreateEvent) : String? {
         val channel = event.message.channel
         val guildId = getGuildId(event)
         val member = event.member ?: run {
             channel.createMessage("You need to be in the same voice channel as the bot.")
-            return
+            return null
         }
         val voiceState = member.getVoiceStateOrNull()
         val voiceChannelId = voiceState?.channelId ?: run {
             channel.createMessage("You need to be in the same voice channel as the bot.")
-            return
+            return null
         }
         val musicManager = LavalinkManager.getMusicManager(guildId)
         val link = musicManager.link
         if (link.state != Link.State.CONNECTED){
             link.connectAudio(voiceChannelId.value)
         }
-        args.forEach{title->
+
+        val addedTracks = mutableListOf<Pair<String, Long>>()
+
+        args.forEach { title ->
             val searchQuery = "ytsearch:$title"
-            when (val loadResult = link.loadItem(searchQuery)){
+            when (val loadResult = link.loadItem(searchQuery)) {
                 is LoadResult.TrackLoaded -> {
-                    val startedNow =  musicManager.playTrack(loadResult.data)
-                    if (startedNow){
+                    val startedNow = musicManager.playTrack(loadResult.data)
+                    if (startedNow) {
                         musicManager.replayTrack = loadResult.data
                     }
+                    addedTracks.add(loadResult.data.info.title to loadResult.data.info.length)
                 }
                 is LoadResult.PlaylistLoaded -> {
                     val firstTrack = loadResult.data.tracks.first()
                     val remainingTracks = loadResult.data.tracks.drop(1)
-
                     musicManager.playTrack(firstTrack)
                     musicManager.trackQueue.addAll(remainingTracks)
                     musicManager.replayTrack = firstTrack
+                    loadResult.data.tracks.mapTo(addedTracks) { it.info.title to it.info.length }
                 }
                 is LoadResult.SearchResult -> {
                     val firstTrack = loadResult.data.tracks.first()
-                    val startedNow =  musicManager.playTrack(firstTrack)
+                    val startedNow = musicManager.playTrack(firstTrack)
                     if (startedNow) {
                         musicManager.replayTrack = firstTrack
                     }
+                    addedTracks.add(firstTrack.info.title to firstTrack.info.length)
                 }
                 is LoadResult.LoadFailed -> channel.createMessage("I couldn't find what I was searching for: \"$title\"")
                 is LoadResult.NoMatches -> channel.createMessage("I couldn't find what I was searching for: \"$title\"")
-
             }
         }
 
+        return if (addedTracks.isEmpty()) null else formatAddedTracks(addedTracks)
     }
 }

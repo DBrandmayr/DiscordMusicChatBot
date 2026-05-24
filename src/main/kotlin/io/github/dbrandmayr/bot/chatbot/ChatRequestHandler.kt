@@ -48,16 +48,18 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
 suspend fun resolveAndExecuteResponseCommands(answer: String, event: MessageCreateEvent): String{
     val jsonRegex = """\{.*}""".toRegex()
     val commandJson = jsonRegex.find(answer)?.value ?: return answer
-    val convMessage = answer.replace(commandJson, "")
     try {
         val botCommand = Json.decodeFromString<BotCommandClass>(commandJson)
-        when (botCommand.command) {
+        val commandResult = when (botCommand.command) {
             "play" -> PlayBotCommand().execute(botCommand.args, event)
+            else -> null
         }
+        if (commandResult != null) return answer.replace(commandJson, commandResult)
     }catch (e: Exception){
         println("Failed to parse Command JSON: ${e.message}")
     }
-    return convMessage
+
+    return answer.replace(commandJson, "")
 }
 
 suspend fun resolveMentionNames(messageContent: String, guild: Guild): String {
