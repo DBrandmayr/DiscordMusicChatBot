@@ -1,6 +1,8 @@
 package io.github.dbrandmayr.bot.musicbot
 
 import dev.kord.core.event.message.MessageCreateEvent
+import io.github.dbrandmayr.bot.Messages
+import io.github.dbrandmayr.bot.fill
 import kotlinx.coroutines.delay
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.milliseconds
@@ -19,13 +21,13 @@ object RandomCommand : Command {
         val max = arguments.lastOrNull()?.toIntOrNull()
 
         if (arguments.count() != 2) {
-            channel.createMessage("Please provide two numbers.")
+            channel.createMessage(Messages.instance.funCommands.random.invalidArgs)
         } else if (min == null || max == null || min >= max) {
-            channel.createMessage("Invalid numbers. Make sure min < max.")
+            channel.createMessage(Messages.instance.funCommands.random.invalidNumbers)
         } else {
-            channel.createMessage("Rolling the dice...")
+            channel.createMessage(Messages.instance.funCommands.random.rolling)
             delay(1900.milliseconds)
-            channel.createMessage("**${(min..max).random()}**")
+            channel.createMessage(Messages.instance.funCommands.random.result.fill("number" to (min..max).random().toString()))
         }
     }
 }
@@ -38,10 +40,10 @@ object CoinCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        channel.createMessage("Flipping the coin...")
+        channel.createMessage(Messages.instance.funCommands.coin.flipping)
         delay(1900.milliseconds)
-        val result = if (Random.nextBoolean()) "Heads" else "Tails"
-        channel.createMessage("It's:\n**${result}**!")
+        val result = if (Random.nextBoolean()) Messages.instance.funCommands.coin.heads else Messages.instance.funCommands.coin.tails
+        channel.createMessage(Messages.instance.funCommands.coin.result.fill("result" to result))
     }
 }
 
@@ -57,19 +59,19 @@ object WheelCommand : Command {
         val wheelCount = wheelOptions.count()
 
         if (wheelCount <= 1) {
-            channel.createMessage("Please provide at least two comma-separated options.")
+            channel.createMessage(Messages.instance.funCommands.wheel.notEnoughOptions)
             return
         } else if (wheelCount >= 50) {
-            channel.createMessage("That's too many options (max 49).")
+            channel.createMessage(Messages.instance.funCommands.wheel.tooManyOptions)
             return
         }
 
         val randomIndex = (0..<wheelCount).random()
-        channel.createMessage("Spinning the wheel...")
+        channel.createMessage(Messages.instance.funCommands.wheel.spinning)
         val choice = wheelOptions[randomIndex]
         val rest = wheelOptions.toMutableList().apply { removeAt(randomIndex) }.joinToString(", ")
         delay(2200.milliseconds)
-        channel.createMessage("# $choice \n*${rest.trim()}*")
+        channel.createMessage(Messages.instance.funCommands.wheel.result.fill("winner" to choice, "rest" to rest.trim()))
     }
 }
 

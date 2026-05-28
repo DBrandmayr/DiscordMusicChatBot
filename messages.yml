@@ -1,0 +1,115 @@
+# messages-example.yml
+# Copy this file to messages.yml and customize to your liking.
+# If messages.yml doesn't exist, the bot uses all built-in defaults.
+# All fields are optional, you only need to include what you want to change.
+#
+# Placeholders like {title}, {count}, etc. are filled in at runtime.
+# Available placeholders are noted in comments next to each field.
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Shared - used across multiple commands, change here to affect all of them
+# ─────────────────────────────────────────────────────────────────────────────
+common:
+  nothingPlaying: "Nothing is currently playing."
+  queueEmpty: "The queue is currently empty."
+  notInSameChannel: "You need to be in the same voice channel as the bot."
+  invalidPosition: "Please provide a valid position number."
+  positionOutOfRange: "Position is out of range for the current queue."
+  searchNoResults: "No results found for \"{query}\"."   # {query}
+  searchFailed: "Something went wrong while searching. Please try again."
+
+# ─────────────────────────────────────────────────────────────────────────────
+# General
+# ─────────────────────────────────────────────────────────────────────────────
+general:
+  prompt: "What can I do for you?"   # shown when a prefix is used with no command or message
+  helpTitle: "Commands"              # title of the help embed
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Music commands
+# ─────────────────────────────────────────────────────────────────────────────
+music:
+  play:
+    noQuery: "Please provide a song name or URL to play."
+    notInVoiceChannel: "You need to be in a voice channel to play music."
+    nowPlaying: "Now playing: \"***{title}***\""                                               # {title}
+    addedToQueue: "Added \"***{title}***\" to the queue."                                       # {title}
+    nowPlayingPlaylist: "Now playing: \"***{title}***\" and added **{count}** more tracks to the queue."  # {title}, {count}
+
+  pause:
+    paused: "Paused."
+
+  resume:
+    resumed: "Resumed."
+
+  stop:
+    stopped: "Stopped and cleared the queue."
+
+  leave:
+    goodbye: "Goodbye!"
+
+  skip:
+    skipped: "Skipped: \"***{title}***\""   # {title}
+
+  playing:
+    nowPlaying: "Now playing: \"**{title}**\"\n*{position} / {duration}*"   # {title}, {position}, {duration}
+
+  replay:
+    noTrackPlayed: "No track has been played yet."
+    willPlayNext: "\"***{title}***\" will play next."   # {title}
+    outOfRange: "That's out of range. Using 1 instead."
+    invalidNumber: "That's not a valid number, ignoring it."
+
+  seek:
+    noTimeProvided: "Please provide a time to seek to."
+    invalidTimeFormat: "Invalid time format. Use mm:ss or seconds."
+    timeOutOfRange: "Time is out of range for the current track."
+    seeked: "Seeked to **{time}**."   # {time}
+
+  volume:
+    currentVolume: "Current volume: **{volume}**."    # {volume}
+    invalidVolume: "Invalid volume. Please provide a number between 0 and 200."
+    volumeOutOfRange: "Volume must be between 0 and 200."
+    volumeSet: "Volume set to **{volume}**."          # {volume}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Queue commands
+# ─────────────────────────────────────────────────────────────────────────────
+queue:
+  list:
+    embedTitle: "Queue"
+
+  shuffle:
+    shuffled: "Queue shuffled."
+
+  insert:
+    queueEmpty: "The queue is empty. Nothing to insert into."
+    inserted: "Inserted **\"{title}\"** at position **{position}** in the queue."          # {title}, {position}
+    insertedPlaylist: "Inserted **{count}** tracks at position **{position}** in the queue."  # {count}, {position}
+
+  remove:
+    positionMustBePositive: "Position must be greater than 0."
+    removed: "Removed \"***{title}***\" from the queue."   # {title}
+    error: "Something went wrong!"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Fun commands
+# ─────────────────────────────────────────────────────────────────────────────
+fun:
+  random:
+    invalidArgs: "Please provide two numbers."
+    invalidNumbers: "Invalid numbers. Make sure min < max."
+    rolling: "Rolling the dice..."
+    result: "**{number}**"   # {number}
+
+  coin:
+    flipping: "Flipping the coin..."
+    heads: "Heads"
+    tails: "Tails"
+    result: "It's:\n**{result}**!"   # {result} — outputs the heads/tails value above
+
+  wheel:
+    notEnoughOptions: "Please provide at least two comma-separated options."
+    tooManyOptions: "That's too many options (max 49)."
+    spinning: "Spinning the wheel..."
+    result: "# {winner}\n*{rest}*"   # {winner} = chosen option, {rest} = remaining options

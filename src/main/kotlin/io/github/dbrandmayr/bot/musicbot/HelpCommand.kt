@@ -2,6 +2,7 @@ package io.github.dbrandmayr.bot.musicbot
 
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageCreateEvent
+import io.github.dbrandmayr.bot.Messages
 import io.github.dbrandmayr.bot.commands
 
 object HelpCommand : Command {
@@ -12,7 +13,7 @@ object HelpCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         event.message.channel.createEmbed {
-            title = "Commands"
+            title = Messages.instance.general.helpTitle
             commands.groupBy { it.category }.forEach { (cat, cmds) ->
                 field {
                     name = "**$cat**"

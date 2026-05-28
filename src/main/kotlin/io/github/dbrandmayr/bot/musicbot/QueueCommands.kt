@@ -5,6 +5,8 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.schlaubi.lavakord.rest.loadItem
+import io.github.dbrandmayr.bot.Messages
+import io.github.dbrandmayr.bot.fill
 
 private const val CATEGORY = "🗂️ Queue Commands"
 
@@ -20,11 +22,11 @@ object QueueCommand : Command {
         val channel = event.message.channel
         val queue = getMusicManager(getGuildId(event)).getQueueSnapshot()
         if (queue.isEmpty()) {
-            channel.createMessage("The queue is currently empty.")
+            channel.createMessage(Messages.instance.common.queueEmpty)
             return
         }
         channel.createEmbed {
-            title = "Queue"
+            title = Messages.instance.queue.list.embedTitle
             description = queue.mapIndexed { i, track -> "${i + 1}. **${track.info.title}**" }.joinToString("\n")
         }
     }
@@ -40,11 +42,11 @@ object ShuffleCommand : Command {
         val channel = event.message.channel
         val musicManager = getMusicManager(getGuildId(event))
         if (musicManager.trackQueue.isEmpty()) {
-            channel.createMessage("The queue is currently empty.")
+            channel.createMessage(Messages.instance.common.queueEmpty)
             return
         }
         musicManager.trackQueue.shuffle()
-        channel.createMessage("Queue shuffled.")
+        channel.createMessage(Messages.instance.queue.shuffle.shuffled)
     }
 }
 
@@ -59,19 +61,19 @@ object InsertCommand : Command {
         val musicManager = getMusicManager(getGuildId(event))
 
         if (!isUserInSameChannel(event, musicManager.link)) {
-            channel.createMessage("You need to be in the same voice channel as the bot.")
+            channel.createMessage(Messages.instance.common.notInSameChannel)
             return
         }
         if (musicManager.trackQueue.isEmpty()) {
-            channel.createMessage("The queue is empty. Nothing to insert into.")
+            channel.createMessage(Messages.instance.queue.insert.queueEmpty)
             return
         }
         val insertNumber = args.lastOrNull()?.toIntOrNull() ?: run {
-            channel.createMessage("Please provide a valid position number.")
+            channel.createMessage(Messages.instance.common.invalidPosition)
             return
         }
         if (insertNumber >= musicManager.trackQueue.size + 1) {
-            channel.createMessage("Position is out of range for the current queue.")
+            channel.createMessage(Messages.instance.common.positionOutOfRange)
             return
         }
         val query = args.dropLast(1).joinToString(" ")
@@ -80,19 +82,28 @@ object InsertCommand : Command {
         when (val loadResult = musicManager.link.loadItem(search)) {
             is LoadResult.TrackLoaded -> {
                 musicManager.trackQueue.add(insertNumber - 1, loadResult.data)
-                channel.createMessage("Inserted **\"${loadResult.data.info.title}\"** at position **${insertNumber}** in the queue.")
+                channel.createMessage(Messages.instance.queue.insert.inserted.fill(
+                    "title" to loadResult.data.info.title,
+                    "position" to insertNumber.toString()
+                ))
             }
             is LoadResult.PlaylistLoaded -> {
                 musicManager.trackQueue.addAll(insertNumber - 1, loadResult.data.tracks)
-                channel.createMessage("Inserted **${loadResult.data.tracks.size}** tracks at position **${insertNumber}** in the queue.")
+                channel.createMessage(Messages.instance.queue.insert.insertedPlaylist.fill(
+                    "count" to loadResult.data.tracks.size.toString(),
+                    "position" to insertNumber.toString()
+                ))
             }
             is LoadResult.SearchResult -> {
                 val firstTrack = loadResult.data.tracks.first()
                 musicManager.trackQueue.add(insertNumber - 1, firstTrack)
-                channel.createMessage("Inserted **\"${firstTrack.info.title}\"** at position **${insertNumber}** in the queue.")
+                channel.createMessage(Messages.instance.queue.insert.inserted.fill(
+                    "title" to firstTrack.info.title,
+                    "position" to insertNumber.toString()
+                ))
             }
-            is LoadResult.NoMatches -> channel.createMessage("No results found for \"$query\".")
-            is LoadResult.LoadFailed -> channel.createMessage("Something went wrong while searching. Please try again.")
+            is LoadResult.NoMatches -> channel.createMessage(Messages.instance.common.searchNoResults.fill("query" to query))
+            is LoadResult.LoadFailed -> channel.createMessage(Messages.instance.common.searchFailed)
         }
     }
 }
@@ -105,23 +116,23 @@ object RemoveCommand : Command {
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
         val removeNumber = args.getOrNull(0)?.toIntOrNull() ?: run {
-            channel.createMessage("Please provide a valid position number.")
+            channel.createMessage(Messages.instance.common.invalidPosition)
             return
         }
         val trackQueue = getMusicManager(getGuildId(event)).trackQueue
         if (removeNumber <= 0) {
-            channel.createMessage("Position must be greater than 0.")
+            channel.createMessage(Messages.instance.queue.remove.positionMustBePositive)
             return
         }
         if (removeNumber > trackQueue.size) {
-            channel.createMessage("Position is out of range for the current queue.")
+            channel.createMessage(Messages.instance.common.positionOutOfRange)
             return
         }
         try {
             val removed = trackQueue.removeAt(removeNumber - 1)
-            channel.createMessage("Removed \"***${removed.info.title}***\" from the queue.")
+            channel.createMessage(Messages.instance.queue.remove.removed.fill("title" to removed.info.title))
         } catch (_: IndexOutOfBoundsException) {
-            channel.createMessage("Something went wrong!")
+            channel.createMessage(Messages.instance.queue.remove.error)
         }
     }
 }

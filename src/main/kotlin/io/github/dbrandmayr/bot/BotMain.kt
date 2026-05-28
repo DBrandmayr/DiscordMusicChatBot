@@ -26,6 +26,7 @@ val commands: List<Command> = funCommands + musicCommands + queueCommands + list
 suspend fun main(args: Array<String>) {
     val configPath = args.firstOrNull() ?: "config.yml"
     val config = Config.load(configPath)
+    Messages.load(args.getOrNull(1) ?: "messages.yml")
     chatClient = ChatGptClient(config.openai.key)
     botSystemPrompt = config.chatbot.systemPrompt
     prefixes = config.bot.prefixes
@@ -54,7 +55,7 @@ suspend fun main(args: Array<String>) {
         val message = messageContent.substring(prefix.length).trimStart() // removes the prefix
 
         if (message.isBlank()) {
-            channel.createMessage("What can I do for you?")
+            channel.createMessage(Messages.instance.general.prompt)
             return@on
         }
         val messageWords = message.trim().split("\\s+".toRegex())
