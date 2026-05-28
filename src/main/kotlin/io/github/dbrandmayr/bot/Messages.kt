@@ -12,7 +12,7 @@ data class Messages(
     val general: GeneralMessages = GeneralMessages(),
     val music: MusicCommandsMessages = MusicCommandsMessages(),
     val queue: QueueCommandsMessages = QueueCommandsMessages(),
-    @JsonProperty("fun") val funCommands: FunCommandsMessages = FunCommandsMessages()
+    @field:JsonProperty("fun") val funCommands: FunCommandsMessages = FunCommandsMessages()
 ) {
     companion object {
         var instance: Messages = Messages()

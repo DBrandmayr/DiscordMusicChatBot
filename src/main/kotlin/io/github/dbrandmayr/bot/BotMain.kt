@@ -21,11 +21,12 @@ lateinit var prefixes: Set<String> private set
 
 val guildChatHistories = mutableMapOf<Snowflake, MutableList<ChatBotMessage>>()
 
-val commands: List<Command> = funCommands + musicCommands + queueCommands + listOf(HelpCommand)
+lateinit var commands: List<Command> private set
 
 suspend fun main(args: Array<String>) {
     val configPath = args.firstOrNull() ?: "config.yml"
     val config = Config.load(configPath)
+    commands = funCommands + musicCommands + queueCommands + listOf(HelpCommand)
     Messages.load(args.getOrNull(1) ?: "messages.yml")
     chatClient = ChatGptClient(config.openai.key)
     botSystemPrompt = config.chatbot.systemPrompt

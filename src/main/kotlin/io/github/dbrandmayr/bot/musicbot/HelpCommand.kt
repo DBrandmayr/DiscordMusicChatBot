@@ -2,11 +2,12 @@ package io.github.dbrandmayr.bot.musicbot
 
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageCreateEvent
+import io.github.dbrandmayr.bot.Config
 import io.github.dbrandmayr.bot.Messages
 import io.github.dbrandmayr.bot.commands
 
 object HelpCommand : Command {
-    override val names = listOf("help", "commands")
+    override val names = Config.instance.commandNames.help
     override val category = "ℹ️ General"
     override val description = "Shows all available commands"
 

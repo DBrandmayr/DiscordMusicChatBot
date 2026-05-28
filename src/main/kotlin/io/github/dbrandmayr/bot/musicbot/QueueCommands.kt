@@ -5,15 +5,17 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.behavior.channel.createEmbed
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.schlaubi.lavakord.rest.loadItem
+import io.github.dbrandmayr.bot.Config
 import io.github.dbrandmayr.bot.Messages
 import io.github.dbrandmayr.bot.fill
 
 private const val CATEGORY = "🗂️ Queue Commands"
+private val commandNames = Config.instance.commandNames
 
 private fun getMusicManager(guildId: Snowflake) = LavalinkManager.getMusicManager(guildId)
 
 object QueueCommand : Command {
-    override val names = listOf("queue", "q")
+    override val names = commandNames.queue
     override val category = CATEGORY
     override val description = "Shows the current queue"
 
@@ -32,7 +34,7 @@ object QueueCommand : Command {
 }
 
 object ShuffleCommand : Command {
-    override val names = listOf("shuffle", "mix")
+    override val names = commandNames.shuffle
     override val category = CATEGORY
     override val description = "Shuffles the queue"
 
@@ -49,7 +51,7 @@ object ShuffleCommand : Command {
 }
 
 object InsertCommand : Command {
-    override val names = listOf("insert", "put")
+    override val names = commandNames.insert
     override val category = CATEGORY
     override val description = "Inserts a track at a position: insert <track> <position>"
 
@@ -106,7 +108,7 @@ object InsertCommand : Command {
 }
 
 object RemoveCommand : Command {
-    override val names = listOf("remove")
+    override val names = commandNames.remove
     override val category = CATEGORY
     override val description = "Removes a track from the queue"
 

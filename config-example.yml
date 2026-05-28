@@ -23,3 +23,64 @@ chatbot:
     You are a helpful and friendly Discord bot assistant.
     Answer questions, help with tasks, and keep the conversation fun and engaging.
     Keep your responses concise and appropriate for a Discord server.
+
+command-names:
+  # First entry is the display name shown in the help embed, the rest are aliases.
+  # All entries trigger the command equally.
+
+  # Fun
+  random:
+    - "random"
+  coin:
+    - "coin"
+    - "c"
+  wheel:
+    - "wheel"
+    - "w"
+
+  # Music
+  play:
+    - "play"
+    - "p"
+  pause:
+    - "pause"
+  resume:
+    - "resume"
+  stop:
+    - "stop"
+  leave:
+    - "leave"
+  skip:
+    - "skip"
+    - "s"
+  playing:
+    - "playing"
+    - "np"
+  replay:
+    - "replay"
+    - "r"
+    - "repeat"
+  seek:
+    - "seek"
+    - "time"
+  volume:
+    - "volume"
+    - "v"
+
+  # Queue
+  queue:
+    - "queue"
+    - "q"
+  shuffle:
+    - "shuffle"
+    - "mix"
+  insert:
+    - "insert"
+    - "put"
+  remove:
+    - "remove"
+
+  # General
+  help:
+    - "help"
+    - "commands"

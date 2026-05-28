@@ -6,16 +6,18 @@ import dev.kord.common.entity.Snowflake
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.schlaubi.lavakord.audio.Link
 import dev.schlaubi.lavakord.rest.loadItem
+import io.github.dbrandmayr.bot.Config
 import io.github.dbrandmayr.bot.Messages
 import io.github.dbrandmayr.bot.fill
 import io.github.dbrandmayr.bot.formatDuration
 
 private const val CATEGORY = "🎵 Music Commands"
+private val commandNames = Config.instance.commandNames
 
 private fun getMusicManager(guildId: Snowflake) = LavalinkManager.getMusicManager(guildId)
 
 object PlayCommand : Command {
-    override val names = listOf("play", "p")
+    override val names = commandNames.play
     override val category = CATEGORY
     override val description = "Plays a song or playlist"
 
@@ -75,7 +77,7 @@ object PlayCommand : Command {
 }
 
 object PauseCommand : Command {
-    override val names = listOf("pause")
+    override val names = commandNames.pause
     override val category = CATEGORY
     override val description = "Pauses the current track"
 
@@ -86,7 +88,7 @@ object PauseCommand : Command {
 }
 
 object ResumeCommand : Command {
-    override val names = listOf("resume")
+    override val names = commandNames.resume
     override val category = CATEGORY
     override val description = "Resumes the current track"
 
@@ -97,7 +99,7 @@ object ResumeCommand : Command {
 }
 
 object StopCommand : Command {
-    override val names = listOf("stop")
+    override val names = commandNames.stop
     override val category = CATEGORY
     override val description = "Stops playback and clears the queue"
 
@@ -108,7 +110,7 @@ object StopCommand : Command {
 }
 
 object LeaveCommand : Command {
-    override val names = listOf("leave")
+    override val names = commandNames.leave
     override val category = CATEGORY
     override val description = "Leaves the voice channel"
 
@@ -121,7 +123,7 @@ object LeaveCommand : Command {
 }
 
 object SkipCommand : Command {
-    override val names = listOf("skip", "s")
+    override val names = commandNames.skip
     override val category = CATEGORY
     override val description = "Skips the current track"
 
@@ -139,7 +141,7 @@ object SkipCommand : Command {
 }
 
 object PlayingCommand : Command {
-    override val names = listOf("playing", "np")
+    override val names = commandNames.playing
     override val category = CATEGORY
     override val description = "Shows what's currently playing"
 
@@ -160,7 +162,7 @@ object PlayingCommand : Command {
 }
 
 object ReplayCommand : Command {
-    override val names = listOf("replay", "r", "repeat")
+    override val names = commandNames.replay
     override val category = CATEGORY
     override val description = "Replays the last track (optional: number of times)"
 
@@ -195,7 +197,7 @@ object ReplayCommand : Command {
 }
 
 object SeekCommand : Command {
-    override val names = listOf("seek", "time")
+    override val names = commandNames.seek
     override val category = CATEGORY
     override val description = "Seeks to a position in the track (mm:ss or seconds)"
 
@@ -238,7 +240,7 @@ object SeekCommand : Command {
 }
 
 object VolumeCommand : Command {
-    override val names = listOf("volume", "v")
+    override val names = commandNames.volume
     override val category = CATEGORY
     override val description = "Sets the volume (0–200)"
 

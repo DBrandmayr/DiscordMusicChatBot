@@ -1,6 +1,7 @@
 package io.github.dbrandmayr.bot.musicbot
 
 import dev.kord.core.event.message.MessageCreateEvent
+import io.github.dbrandmayr.bot.Config
 import io.github.dbrandmayr.bot.Messages
 import io.github.dbrandmayr.bot.fill
 import kotlinx.coroutines.delay
@@ -9,8 +10,10 @@ import kotlin.time.Duration.Companion.milliseconds
 
 private const val CATEGORY = "🎲 Fun Commands"
 
+private val commandNames = Config.instance.commandNames
+
 object RandomCommand : Command {
-    override val names = listOf("random")
+    override val names = commandNames.random
     override val category = CATEGORY
     override val description = "Rolls a random number between two numbers"
 
@@ -33,7 +36,7 @@ object RandomCommand : Command {
 }
 
 object CoinCommand : Command {
-    override val names = listOf("coin", "c")
+    override val names = commandNames.coin
     override val category = CATEGORY
     override val description = "Flips a coin (Heads or Tails)"
 
@@ -47,7 +50,7 @@ object CoinCommand : Command {
 }
 
 object WheelCommand : Command {
-    override val names = listOf("wheel", "w")
+    override val names = commandNames.wheel
     override val category = CATEGORY
     override val description = "Spins a wheel with your options (comma-separated)"
 
