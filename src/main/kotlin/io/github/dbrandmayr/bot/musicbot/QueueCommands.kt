@@ -13,8 +13,7 @@ private const val CATEGORY = "🗂️ Queue Commands"
 private fun getMusicManager(guildId: Snowflake) = LavalinkManager.getMusicManager(guildId)
 
 object QueueCommand : Command {
-    override val name = "queue"
-    override val aliases = listOf("q")
+    override val names = listOf("queue", "q")
     override val category = CATEGORY
     override val description = "Shows the current queue"
 
@@ -33,8 +32,7 @@ object QueueCommand : Command {
 }
 
 object ShuffleCommand : Command {
-    override val name = "shuffle"
-    override val aliases = listOf("mix")
+    override val names = listOf("shuffle", "mix")
     override val category = CATEGORY
     override val description = "Shuffles the queue"
 
@@ -51,8 +49,7 @@ object ShuffleCommand : Command {
 }
 
 object InsertCommand : Command {
-    override val name = "insert"
-    override val aliases = listOf("put")
+    override val names = listOf("insert", "put")
     override val category = CATEGORY
     override val description = "Inserts a track at a position: insert <track> <position>"
 
@@ -109,7 +106,7 @@ object InsertCommand : Command {
 }
 
 object RemoveCommand : Command {
-    override val name = "remove"
+    override val names = listOf("remove")
     override val category = CATEGORY
     override val description = "Removes a track from the queue"
 

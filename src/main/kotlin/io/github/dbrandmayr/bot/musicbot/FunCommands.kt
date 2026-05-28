@@ -10,7 +10,7 @@ import kotlin.time.Duration.Companion.milliseconds
 private const val CATEGORY = "🎲 Fun Commands"
 
 object RandomCommand : Command {
-    override val name = "random"
+    override val names = listOf("random")
     override val category = CATEGORY
     override val description = "Rolls a random number between two numbers"
 
@@ -33,8 +33,7 @@ object RandomCommand : Command {
 }
 
 object CoinCommand : Command {
-    override val name = "coin"
-    override val aliases = listOf("c")
+    override val names = listOf("coin", "c")
     override val category = CATEGORY
     override val description = "Flips a coin (Heads or Tails)"
 
@@ -48,8 +47,7 @@ object CoinCommand : Command {
 }
 
 object WheelCommand : Command {
-    override val name = "wheel"
-    override val aliases = listOf("w")
+    override val names = listOf("wheel", "w")
     override val category = CATEGORY
     override val description = "Spins a wheel with your options (comma-separated)"
 

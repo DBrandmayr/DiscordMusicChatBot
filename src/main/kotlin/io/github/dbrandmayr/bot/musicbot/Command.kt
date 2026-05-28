@@ -7,8 +7,7 @@ import dev.schlaubi.lavakord.audio.Link
 import dev.schlaubi.lavakord.audio.player.Player
 
 interface Command {
-    val name: String
-    val aliases: List<String> get() = emptyList()
+    val names: List<String>
     val category: String
     val description: String
     suspend fun execute(args: List<String>, event: MessageCreateEvent)

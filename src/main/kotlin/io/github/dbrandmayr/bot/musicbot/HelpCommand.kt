@@ -6,8 +6,7 @@ import io.github.dbrandmayr.bot.Messages
 import io.github.dbrandmayr.bot.commands
 
 object HelpCommand : Command {
-    override val name = "help"
-    override val aliases = listOf("commands")
+    override val names = listOf("help", "commands")
     override val category = "ℹ️ General"
     override val description = "Shows all available commands"
 
@@ -18,8 +17,8 @@ object HelpCommand : Command {
                 field {
                     name = "**$cat**"
                     value = cmds.joinToString("\n") { cmd ->
-                        val aliasStr = if (cmd.aliases.isEmpty()) "" else " *(${cmd.aliases.joinToString(", ")})*"
-                        "**`${cmd.name}`**$aliasStr — ${cmd.description}"
+                        val aliasStr = if (cmd.names.size <= 1) "" else " *(${cmd.names.drop(1).joinToString(", ")})*"
+                        "**`${cmd.names.first()}`**$aliasStr — ${cmd.description}"
                     }
                     inline = false
                 }

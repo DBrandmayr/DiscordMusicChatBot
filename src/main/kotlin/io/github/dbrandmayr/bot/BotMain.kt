@@ -61,7 +61,7 @@ suspend fun main(args: Array<String>) {
         val messageWords = message.trim().split("\\s+".toRegex())
         val commandName = messageWords[0].lowercase()
         val args = messageWords.drop(1)
-        val command = commands.find { it.name == commandName || it.aliases.contains(commandName) }
+        val command = commands.find { it.names.contains(commandName) }
 
         if (command != null){
             command.execute(args, this)

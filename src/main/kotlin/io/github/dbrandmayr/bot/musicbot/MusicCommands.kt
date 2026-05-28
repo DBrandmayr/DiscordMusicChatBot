@@ -15,8 +15,7 @@ private const val CATEGORY = "🎵 Music Commands"
 private fun getMusicManager(guildId: Snowflake) = LavalinkManager.getMusicManager(guildId)
 
 object PlayCommand : Command {
-    override val name = "play"
-    override val aliases = listOf("p")
+    override val names = listOf("play", "p")
     override val category = CATEGORY
     override val description = "Plays a song or playlist"
 
@@ -76,7 +75,7 @@ object PlayCommand : Command {
 }
 
 object PauseCommand : Command {
-    override val name = "pause"
+    override val names = listOf("pause")
     override val category = CATEGORY
     override val description = "Pauses the current track"
 
@@ -87,7 +86,7 @@ object PauseCommand : Command {
 }
 
 object ResumeCommand : Command {
-    override val name = "resume"
+    override val names = listOf("resume")
     override val category = CATEGORY
     override val description = "Resumes the current track"
 
@@ -98,7 +97,7 @@ object ResumeCommand : Command {
 }
 
 object StopCommand : Command {
-    override val name = "stop"
+    override val names = listOf("stop")
     override val category = CATEGORY
     override val description = "Stops playback and clears the queue"
 
@@ -109,7 +108,7 @@ object StopCommand : Command {
 }
 
 object LeaveCommand : Command {
-    override val name = "leave"
+    override val names = listOf("leave")
     override val category = CATEGORY
     override val description = "Leaves the voice channel"
 
@@ -122,8 +121,7 @@ object LeaveCommand : Command {
 }
 
 object SkipCommand : Command {
-    override val name = "skip"
-    override val aliases = listOf("s")
+    override val names = listOf("skip", "s")
     override val category = CATEGORY
     override val description = "Skips the current track"
 
@@ -141,8 +139,7 @@ object SkipCommand : Command {
 }
 
 object PlayingCommand : Command {
-    override val name = "playing"
-    override val aliases = listOf("np")
+    override val names = listOf("playing", "np")
     override val category = CATEGORY
     override val description = "Shows what's currently playing"
 
@@ -163,8 +160,7 @@ object PlayingCommand : Command {
 }
 
 object ReplayCommand : Command {
-    override val name = "replay"
-    override val aliases = listOf("r", "repeat")
+    override val names = listOf("replay", "r", "repeat")
     override val category = CATEGORY
     override val description = "Replays the last track (optional: number of times)"
 
@@ -199,8 +195,7 @@ object ReplayCommand : Command {
 }
 
 object SeekCommand : Command {
-    override val name = "seek"
-    override val aliases = listOf("time")
+    override val names = listOf("seek", "time")
     override val category = CATEGORY
     override val description = "Seeks to a position in the track (mm:ss or seconds)"
 
@@ -243,8 +238,7 @@ object SeekCommand : Command {
 }
 
 object VolumeCommand : Command {
-    override val name = "volume"
-    override val aliases = listOf("v")
+    override val names = listOf("volume", "v")
     override val category = CATEGORY
     override val description = "Sets the volume (0–200)"
 
