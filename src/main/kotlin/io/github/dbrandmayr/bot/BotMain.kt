@@ -88,8 +88,8 @@ suspend fun main(args: Array<String>) {
     }
 }
 
-fun getChatHistory(guildId: Snowflake): List<ChatBotMessage>? {
-    return guildChatHistories[guildId]?.toList()
+fun getChatHistory(guildId: Snowflake): List<ChatBotMessage> {
+    return guildChatHistories[guildId]?.toList() ?: emptyList()
 }
 
 private fun findDuplicateCommandNames(commands: List<Command>): Set<String> {

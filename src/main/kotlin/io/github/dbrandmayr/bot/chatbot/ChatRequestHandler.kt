@@ -24,10 +24,7 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
 
     val userMessage = formatMessage(message) ?: return
 
-    val chatHistory = getChatHistory(guildId) ?: run {
-        println("Returned at getting chat history while handling chat request")
-        return
-    }
+    val chatHistory = getChatHistory(guildId)
 
     val queryMessages = mutableListOf(ChatBotMessage(role = "system", content = systemMessage))
     queryMessages.addAll(chatHistory)
