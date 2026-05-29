@@ -103,38 +103,38 @@ Commands are triggered by any configured prefix (e.g. `!play lo-fi` or `hi bot p
 If no prefix is configured, it defaults to `!!`.
 
 ### 🎵 Music
-| Command | Aliases | Description |
-|---|---|---|
-| `play` | `p` | Plays a song or playlist |
-| `pause` | | Pauses the current track |
-| `resume` | | Resumes the current track |
-| `stop` | | Stops playback and clears the queue |
-| `skip` | `s` | Skips the current track |
-| `playing` | `np` | Shows what's currently playing |
-| `seek` | `time` | Seeks to a position in the track (`mm:ss` or seconds) |
-| `replay` | `r`, `repeat` | Replays the last track (optional: number of times) |
-| `volume` | `v` | Sets the volume (0–200) |
-| `leave` | | Leaves the voice channel |
+| Command | Description |
+|---|---|
+| `play` | Plays a song or playlist |
+| `pause` | Pauses the current track |
+| `resume` | Resumes the current track |
+| `stop` | Stops playback and clears the queue |
+| `skip` | Skips the current track |
+| `playing` | Shows what's currently playing |
+| `seek` | Seeks to a position in the track (`mm:ss` or seconds) |
+| `replay` | Replays the last track (optional: number of times) |
+| `volume` | Sets the volume (0–200) |
+| `leave` | Leaves the voice channel |
 
 ### 📋 Queue
-| Command | Aliases | Description |
-|---|---|---|
-| `queue` | `q` | Shows the current queue |
-| `shuffle` | `mix` | Shuffles the queue |
-| `insert` | `put` | Inserts a track at a position: `insert <track> <position>` |
-| `remove` | | Removes a track from the queue by position |
+| Command | Description |
+|---|---|
+| `queue` | Shows the current queue |
+| `shuffle` | Shuffles the queue |
+| `insert` | Inserts a track at a position: `insert <track> <position>` |
+| `remove` | Removes a track from the queue by position |
 
 ### 🎲 Fun
-| Command | Aliases | Description |
-|---|---|---|
-| `random` | | Rolls a random number between two numbers |
-| `coin` | `c` | Flips a coin |
-| `wheel` | `w` | Spins a wheel with your options (comma-separated) |
+| Command | Description |
+|---|---|
+| `random` | Rolls a random number between two numbers |
+| `coin` | Flips a coin |
+| `wheel` | Spins a wheel with your options (comma-separated) |
 
 ### ℹ️ General
-| Command | Aliases | Description |
-|---|---|---|
-| `help`  | `commands` | Shows all available commands |
+| Command | Description |
+|---|---|
+| `help` | Shows all available commands |
 
 ## Chatbot
 
