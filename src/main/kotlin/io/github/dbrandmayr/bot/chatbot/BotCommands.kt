@@ -5,6 +5,8 @@ import dev.arbjerg.lavalink.protocol.v4.LoadResult
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.schlaubi.lavakord.audio.Link
 import dev.schlaubi.lavakord.rest.loadItem
+import io.github.dbrandmayr.bot.Messages
+import io.github.dbrandmayr.bot.fill
 import io.github.dbrandmayr.bot.formatAddedTracks
 import io.github.dbrandmayr.bot.musicbot.LavalinkManager
 import kotlinx.serialization.Serializable
@@ -26,12 +28,12 @@ class PlayBotCommand : BotCommand {
         val channel = event.message.channel
         val guildId = getGuildId(event)
         val member = event.member ?: run {
-            channel.createMessage("You need to be in the same voice channel as the bot.")
+            channel.createMessage(Messages.instance.common.notInSameChannel)
             return null
         }
         val voiceState = member.getVoiceStateOrNull()
         val voiceChannelId = voiceState?.channelId ?: run {
-            channel.createMessage("You need to be in the same voice channel as the bot.")
+            channel.createMessage(Messages.instance.common.notInSameChannel)
             return null
         }
         val musicManager = LavalinkManager.getMusicManager(guildId)
@@ -68,8 +70,8 @@ class PlayBotCommand : BotCommand {
                     }
                     addedTracks.add(firstTrack.info.title to firstTrack.info.length)
                 }
-                is LoadResult.LoadFailed -> channel.createMessage("I couldn't find what I was searching for: \"$title\"")
-                is LoadResult.NoMatches -> channel.createMessage("I couldn't find what I was searching for: \"$title\"")
+                is LoadResult.LoadFailed -> channel.createMessage(Messages.instance.common.searchFailed)
+                is LoadResult.NoMatches -> channel.createMessage(Messages.instance.common.searchNoResults.fill("query" to title))
             }
         }
 

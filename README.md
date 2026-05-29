@@ -1,6 +1,6 @@
 # Discord Music ChatBot
 
-A self-hosted Discord music and AI chat bot.  
+A self-hosted, highly customizable Discord music and AI chat bot.  
 It requires a connection to a [Lavalink](https://github.com/lavalink-devs/Lavalink) server for audio playback and access to an OpenAI-compatible API for AI chat responses.
 
 ## Features
@@ -8,8 +8,8 @@ It requires a connection to a [Lavalink](https://github.com/lavalink-devs/Lavali
 - **Music playback** – play tracks and playlists from YouTube or other platforms that [Lavalink](https://github.com/lavalink-devs/Lavalink) supports
 - **Music Queue Management** – queue tracks, shuffle, insert, and remove tracks from the queue
 - **AI chat** – conversational responses via any OpenAI-compatible API, including the ability to queue music through natural language
+- **Highly customizable** – command names and aliases, all bot response messages, prefixes, AI model, system prompt, and API endpoint — all via YAML files, no code changes needed
 - **Persistent chat history** – per-guild conversation history stored in SQLite, restored on restart
-- **Configurable** – prefixes, AI model, system prompt, and more via a YAML config file
 
 ## Tech Stack
 
@@ -17,41 +17,43 @@ It requires a connection to a [Lavalink](https://github.com/lavalink-devs/Lavali
 - [Kord](https://github.com/kordlib/kord) – Discord API client
 - [Lavalink.kt](https://github.com/kordlib/Lavalink.kt) + [Lavalink](https://github.com/lavalink-devs/Lavalink) – music search and audio playback
 - [Exposed](https://github.com/JetBrains/Exposed) + SQLite – chat history persistence
-- OpenAI-compatible API (e.g. [OpenAI](https://platform.openai.com/docs), [Google Gemini](https://ai.google.dev/gemini-api/docs), [LM Studio](https://lmstudio.ai)) – AI chat responses
+- OpenAI-compatible API – AI chat responses
 
 ## Prerequisites
 
-- JDK 21+
+- Java 21+
 - A [Discord bot token](https://discord.com/developers/applications)
 - **For music playback:** A running and configured (preferably with [YouTube support](https://github.com/lavalink-devs/youtube-source)) [Lavalink](https://github.com/lavalink-devs/Lavalink) server
-- **For AI chat:** Access to an OpenAI-compatible API (can be disabled in the config)
+- **For AI chat:** Access to an OpenAI-compatible API (e.g. [OpenAI](https://platform.openai.com/docs), [Google Gemini](https://ai.google.dev/gemini-api/docs/openai), [LM Studio](https://lmstudio.ai/docs/developer/openai-compat))
 
 ## Quick Start (Recommended)
 
-Download the latest release from the GitHub Releases page.
+### 1. Download the Bot JAR
+Download the latest release from the [releases page](https://github.com/DBrandmayr/DiscordMusicChatBot/releases/latest).
 
-### 1. Create the config file
+### 2. Create the config files
 
-Copy [`config-example.yml`](config-example.yml) to `config.yml` and fill in your credentials.
+Copy [`config-example.yml`](config-example.yml) to `config.yml` and fill in your credentials.  
+Optionally copy [`messages-example.yml`](messages-example.yml) to `messages.yml` to customize bot messages.
 
-### 2. Run the bot
+### 3. Run the bot
 
 ```bash
 java -jar dmcbot.jar
 ```
 
-`config.yml` is assumed to be in the working directory.  
-If it's located somewhere else, you can specify the path as the first argument.
-
-Example:
+`config.yml` and `messages.yml` are assumed to be in the working directory.  
+Custom paths can be passed as arguments — config first, messages second.
 
 ```bash
-java -jar dmcbot.jar /path/to/config.yml
+java -jar dmcbot.jar /path/to/config.yml /path/to/messages.yml
 ```
 
 ---
 
 ## Building from Source
+
+Requires JDK 21+. No separate Gradle installation needed, the Gradle wrapper is included.
 
 ### 1. Clone the repository
 
@@ -62,20 +64,38 @@ cd DiscordMusicChatBot
 
 ### 2. Build the project
 
+**Linux / macOS**
 ```bash
 ./gradlew shadowJar
 ```
 
+**Windows**
+```batch
+gradlew.bat shadowJar
+```
+
 The built JAR will be located in:
 
-```txt
+```
 build/jars/
 ```
 
-### 3. Run the built JAR
+### 3. Create the config files
+
+Copy [`config-example.yml`](config-example.yml) to `config.yml` and fill in your credentials.  
+Optionally copy [`messages-example.yml`](messages-example.yml) to `messages.yml` to customize bot messages.
+
+### 4. Run the built JAR
 
 ```bash
 java -jar build/jars/dmcbot.jar
+```
+
+`config.yml` and `messages.yml` are assumed to be in the working directory.  
+Custom paths can be passed as arguments, config is the first argument, messages second.
+
+```bash
+java -jar build/jars/dmcbot.jar /path/to/config.yml /path/to/messages.yml
 ```
 ## Commands
 

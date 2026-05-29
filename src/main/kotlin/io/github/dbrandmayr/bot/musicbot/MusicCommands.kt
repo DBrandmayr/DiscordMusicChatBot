@@ -1,20 +1,23 @@
 package io.github.dbrandmayr.bot.musicbot
 
 import dev.arbjerg.lavalink.protocol.v4.LoadResult
-import io.github.dbrandmayr.bot.formatDuration
 import dev.arbjerg.lavalink.protocol.v4.Track
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.schlaubi.lavakord.audio.Link
 import dev.schlaubi.lavakord.rest.loadItem
+import io.github.dbrandmayr.bot.Config
+import io.github.dbrandmayr.bot.Messages
+import io.github.dbrandmayr.bot.fill
+import io.github.dbrandmayr.bot.formatDuration
 
 private const val CATEGORY = "🎵 Music Commands"
+private val commandNames = Config.instance.commandNames
 
 private fun getMusicManager(guildId: Snowflake) = LavalinkManager.getMusicManager(guildId)
 
 object PlayCommand : Command {
-    override val name = "play"
-    override val aliases = listOf("p")
+    override val names = commandNames.play
     override val category = CATEGORY
     override val description = "Plays a song or playlist"
 
@@ -22,12 +25,12 @@ object PlayCommand : Command {
         val channel = event.message.channel
         val query = args.joinToString(" ")
         if (query.isBlank()) {
-            channel.createMessage("Please provide a song name or URL to play.")
+            channel.createMessage(Messages.instance.music.play.noQuery)
             return
         }
         val guildId = getGuildId(event)
         val voiceChannelId = event.member?.getVoiceStateOrNull()?.channelId ?: run {
-            channel.createMessage("You need to be in a voice channel to play music.")
+            channel.createMessage(Messages.instance.music.play.notInVoiceChannel)
             return
         }
 
@@ -40,10 +43,10 @@ object PlayCommand : Command {
             is LoadResult.TrackLoaded -> {
                 val startedNow = musicManager.playTrack(loadResult.data)
                 if (startedNow) {
-                    channel.createMessage("Now playing: \"***${loadResult.data.info.title}***\"")
+                    channel.createMessage(Messages.instance.music.play.nowPlaying.fill("title" to loadResult.data.info.title))
                     musicManager.replayTrack = loadResult.data
                 } else {
-                    channel.createMessage("Added \"***${loadResult.data.info.title}***\" to the queue.")
+                    channel.createMessage(Messages.instance.music.play.addedToQueue.fill("title" to loadResult.data.info.title))
                 }
             }
             is LoadResult.PlaylistLoaded -> {
@@ -52,59 +55,62 @@ object PlayCommand : Command {
                 musicManager.playTrack(firstTrack)
                 musicManager.trackQueue.addAll(remaining)
                 musicManager.replayTrack = firstTrack
-                channel.createMessage("Now playing: \"***${firstTrack.info.title}***\" and added **${remaining.size}** more tracks to the queue.")
+                channel.createMessage(Messages.instance.music.play.nowPlayingPlaylist.fill(
+                    "title" to firstTrack.info.title,
+                    "count" to remaining.size.toString()
+                ))
             }
             is LoadResult.SearchResult -> {
                 val firstTrack = loadResult.data.tracks.first()
                 val startedNow = musicManager.playTrack(firstTrack)
                 if (startedNow) {
-                    channel.createMessage("Now playing: \"***${firstTrack.info.title}***\"")
+                    channel.createMessage(Messages.instance.music.play.nowPlaying.fill("title" to firstTrack.info.title))
                     musicManager.replayTrack = firstTrack
                 } else {
-                    channel.createMessage("Added \"***${firstTrack.info.title}***\" to the queue.")
+                    channel.createMessage(Messages.instance.music.play.addedToQueue.fill("title" to firstTrack.info.title))
                 }
             }
-            is LoadResult.NoMatches -> channel.createMessage("No results found for \"$query\".")
-            is LoadResult.LoadFailed -> channel.createMessage("Something went wrong while searching. Please try again.")
+            is LoadResult.NoMatches -> channel.createMessage(Messages.instance.common.searchNoResults.fill("query" to query))
+            is LoadResult.LoadFailed -> channel.createMessage(Messages.instance.common.searchFailed)
         }
     }
 }
 
 object PauseCommand : Command {
-    override val name = "pause"
+    override val names = commandNames.pause
     override val category = CATEGORY
     override val description = "Pauses the current track"
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         getPlayer(event).pause(true)
-        event.message.channel.createMessage("Paused.")
+        event.message.channel.createMessage(Messages.instance.music.pause.paused)
     }
 }
 
 object ResumeCommand : Command {
-    override val name = "resume"
+    override val names = commandNames.resume
     override val category = CATEGORY
     override val description = "Resumes the current track"
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         getPlayer(event).pause(false)
-        event.message.channel.createMessage("Resumed.")
+        event.message.channel.createMessage(Messages.instance.music.resume.resumed)
     }
 }
 
 object StopCommand : Command {
-    override val name = "stop"
+    override val names = commandNames.stop
     override val category = CATEGORY
     override val description = "Stops playback and clears the queue"
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         getMusicManager(getGuildId(event)).stop()
-        event.message.channel.createMessage("Stopped and cleared the queue.")
+        event.message.channel.createMessage(Messages.instance.music.stop.stopped)
     }
 }
 
 object LeaveCommand : Command {
-    override val name = "leave"
+    override val names = commandNames.leave
     override val category = CATEGORY
     override val description = "Leaves the voice channel"
 
@@ -112,13 +118,12 @@ object LeaveCommand : Command {
         val musicManager = getMusicManager(getGuildId(event))
         musicManager.stop()
         musicManager.link.destroy()
-        event.message.channel.createMessage("Goodbye!")
+        event.message.channel.createMessage(Messages.instance.music.leave.goodbye)
     }
 }
 
 object SkipCommand : Command {
-    override val name = "skip"
-    override val aliases = listOf("s")
+    override val names = commandNames.skip
     override val category = CATEGORY
     override val description = "Skips the current track"
 
@@ -127,17 +132,16 @@ object SkipCommand : Command {
         val musicManager = getMusicManager(getGuildId(event))
         val track = musicManager.currentTrack
         if (track != null) {
-            channel.createMessage("Skipped: \"***${track.info.title}***\"")
+            channel.createMessage(Messages.instance.music.skip.skipped.fill("title" to track.info.title))
             musicManager.skip()
         } else {
-            channel.createMessage("Nothing is currently playing.")
+            channel.createMessage(Messages.instance.common.nothingPlaying)
         }
     }
 }
 
 object PlayingCommand : Command {
-    override val name = "playing"
-    override val aliases = listOf("np")
+    override val names = commandNames.playing
     override val category = CATEGORY
     override val description = "Shows what's currently playing"
 
@@ -145,17 +149,20 @@ object PlayingCommand : Command {
         val channel = event.message.channel
         val musicManager = getMusicManager(getGuildId(event))
         val playingTrack = musicManager.currentTrack ?: run {
-            channel.createMessage("Nothing is currently playing.")
+            channel.createMessage(Messages.instance.common.nothingPlaying)
             return
         }
         val livePosition = musicManager.link.player.position
-        channel.createMessage("Now playing: \"**${playingTrack.info.title}**\"\n*${formatDuration(livePosition)} / ${formatDuration(playingTrack.info.length)}*")
+        channel.createMessage(Messages.instance.music.playing.nowPlaying.fill(
+            "title" to playingTrack.info.title,
+            "position" to formatDuration(livePosition),
+            "duration" to formatDuration(playingTrack.info.length)
+        ))
     }
 }
 
 object ReplayCommand : Command {
-    override val name = "replay"
-    override val aliases = listOf("r", "repeat")
+    override val names = commandNames.replay
     override val category = CATEGORY
     override val description = "Replays the last track (optional: number of times)"
 
@@ -163,7 +170,7 @@ object ReplayCommand : Command {
         val channel = event.message.channel
         val musicManager = getMusicManager(getGuildId(event))
         val replayTrack: Track = musicManager.replayTrack ?: run {
-            channel.createMessage("No track has been played yet.")
+            channel.createMessage(Messages.instance.music.replay.noTrackPlayed)
             return
         }
         var replayAmount = 1
@@ -171,11 +178,11 @@ object ReplayCommand : Command {
             try {
                 replayAmount = args[0].toInt()
                 if (replayAmount == 0 || replayAmount >= 100) {
-                    channel.createMessage("That's out of range. Using 1 instead.")
+                    channel.createMessage(Messages.instance.music.replay.outOfRange)
                     replayAmount = 1
                 }
             } catch (_: NumberFormatException) {
-                channel.createMessage("That's not a valid number, ignoring it.")
+                channel.createMessage(Messages.instance.music.replay.invalidNumber)
             }
         }
         val replayList = List(replayAmount) { replayTrack }
@@ -185,13 +192,12 @@ object ReplayCommand : Command {
             musicManager.playTrack(replayList[0])
             musicManager.trackQueue.addAll(0, replayList.drop(1))
         }
-        channel.createMessage("\"***${replayTrack.info.title}***\" will play next.")
+        channel.createMessage(Messages.instance.music.replay.willPlayNext.fill("title" to replayTrack.info.title))
     }
 }
 
 object SeekCommand : Command {
-    override val name = "seek"
-    override val aliases = listOf("time")
+    override val names = commandNames.seek
     override val category = CATEGORY
     override val description = "Seeks to a position in the track (mm:ss or seconds)"
 
@@ -200,27 +206,27 @@ object SeekCommand : Command {
         val musicManager = getMusicManager(getGuildId(event))
 
         if (!isUserInSameChannel(event, musicManager.link)) {
-            channel.createMessage("You need to be in the same voice channel as the bot.")
+            channel.createMessage(Messages.instance.common.notInSameChannel)
             return
         }
         if (args.isEmpty()) {
-            channel.createMessage("Please provide a time to seek to.")
+            channel.createMessage(Messages.instance.music.seek.noTimeProvided)
             return
         }
         if (musicManager.currentTrack == null) {
-            channel.createMessage("Nothing is currently playing.")
+            channel.createMessage(Messages.instance.common.nothingPlaying)
             return
         }
         val timeMillis = parseTimeToMillis(args[0]) ?: run {
-            channel.createMessage("Invalid time format. Use mm:ss or seconds.")
+            channel.createMessage(Messages.instance.music.seek.invalidTimeFormat)
             return
         }
         if (timeMillis < 0 || timeMillis > (musicManager.currentTrack?.info?.length ?: 0)) {
-            channel.createMessage("Time is out of range for the current track.")
+            channel.createMessage(Messages.instance.music.seek.timeOutOfRange)
             return
         }
         musicManager.link.player.seekTo(timeMillis)
-        channel.createMessage("Seeked to **${formatDuration(timeMillis)}**.")
+        channel.createMessage(Messages.instance.music.seek.seeked.fill("time" to formatDuration(timeMillis)))
     }
 
     private fun parseTimeToMillis(time: String): Long? = try {
@@ -234,8 +240,7 @@ object SeekCommand : Command {
 }
 
 object VolumeCommand : Command {
-    override val name = "volume"
-    override val aliases = listOf("v")
+    override val names = commandNames.volume
     override val category = CATEGORY
     override val description = "Sets the volume (0–200)"
 
@@ -244,24 +249,24 @@ object VolumeCommand : Command {
         val musicManager = getMusicManager(getGuildId(event))
 
         if (!isUserInSameChannel(event, musicManager.link)) {
-            channel.createMessage("You need to be in the same voice channel as the bot.")
+            channel.createMessage(Messages.instance.common.notInSameChannel)
             return
         }
         if (args.isEmpty()) {
             val current = musicManager.player.filters.volume?.times(100)?.toInt()
-            channel.createMessage("Current volume: **$current**.")
+            channel.createMessage(Messages.instance.music.volume.currentVolume.fill("volume" to current.toString()))
             return
         }
         val volume = args[0].toIntOrNull() ?: run {
-            channel.createMessage("Invalid volume. Please provide a number between 0 and 200.")
+            channel.createMessage(Messages.instance.music.volume.invalidVolume)
             return
         }
         if (volume < 0 || volume > 200) {
-            channel.createMessage("Volume must be between 0 and 200.")
+            channel.createMessage(Messages.instance.music.volume.volumeOutOfRange)
             return
         }
         musicManager.setPlayerVolume(volume)
-        channel.createMessage("Volume set to **$volume**.")
+        channel.createMessage(Messages.instance.music.volume.volumeSet.fill("volume" to volume.toString()))
     }
 }
 

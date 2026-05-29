@@ -2,6 +2,7 @@ package io.github.dbrandmayr.bot
 
 import dev.kord.common.entity.Snowflake
 import dev.kord.core.Kord
+import dev.kord.core.event.gateway.ReadyEvent
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.kord.core.on
 import dev.kord.gateway.Intent
@@ -21,11 +22,15 @@ lateinit var prefixes: Set<String> private set
 
 val guildChatHistories = mutableMapOf<Snowflake, MutableList<ChatBotMessage>>()
 
-val commands: List<Command> = funCommands + musicCommands + queueCommands + listOf(HelpCommand)
+lateinit var commands: List<Command> private set
 
 suspend fun main(args: Array<String>) {
     val configPath = args.firstOrNull() ?: "config.yml"
     val config = Config.load(configPath)
+    commands = funCommands + musicCommands + queueCommands + listOf(HelpCommand)
+    val duplicates = findDuplicateCommandNames(commands)
+    if (duplicates.isNotEmpty()) println("[33mWarning: duplicate command names detected: ${duplicates.joinToString(", ")}[0m")
+    Messages.load(args.getOrNull(1) ?: "messages.yml")
     chatClient = ChatGptClient(config.openai.key)
     botSystemPrompt = config.chatbot.systemPrompt
     prefixes = config.bot.prefixes
@@ -42,6 +47,12 @@ suspend fun main(args: Array<String>) {
         password = config.lavalink.password
     )
 
+    kord.on<ReadyEvent> {
+        println("[1;32m══════════════════════════")
+        println(" Bot is online!".padStart(20, ' '))
+        println("══════════════════════════[0m")
+    }
+
     kord.on<MessageCreateEvent> {
         val channel = message.channel
 
@@ -54,13 +65,13 @@ suspend fun main(args: Array<String>) {
         val message = messageContent.substring(prefix.length).trimStart() // removes the prefix
 
         if (message.isBlank()) {
-            channel.createMessage("What can I do for you?")
+            channel.createMessage(Messages.instance.general.prompt)
             return@on
         }
         val messageWords = message.trim().split("\\s+".toRegex())
         val commandName = messageWords[0].lowercase()
         val args = messageWords.drop(1)
-        val command = commands.find { it.name == commandName || it.aliases.contains(commandName) }
+        val command = commands.find { it.names.contains(commandName) }
 
         if (command != null){
             command.execute(args, this)
@@ -79,6 +90,17 @@ suspend fun main(args: Array<String>) {
 
 fun getChatHistory(guildId: Snowflake): List<ChatBotMessage>? {
     return guildChatHistories[guildId]?.toList()
+}
+
+private fun findDuplicateCommandNames(commands: List<Command>): Set<String> {
+    val seen = mutableSetOf<String>()
+    val duplicates = mutableSetOf<String>()
+    for (com in commands) {
+        for (name in com.names) {
+            if (!seen.add(name)) duplicates.add(name)
+        }
+    }
+    return duplicates
 }
 
 fun addToChatHistory(guildId: Snowflake, message: ChatBotMessage): Boolean {
