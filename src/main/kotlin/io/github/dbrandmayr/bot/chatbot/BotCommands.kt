@@ -70,7 +70,8 @@ class PlayBotCommand : BotCommand {
                     }
                     addedTracks.add(firstTrack.info.title to firstTrack.info.length)
                 }
-                is LoadResult.LoadFailed, is LoadResult.NoMatches -> channel.createMessage(Messages.instance.common.searchNoResults.fill("query" to title))
+                is LoadResult.LoadFailed -> channel.createMessage(Messages.instance.common.searchFailed)
+                is LoadResult.NoMatches -> channel.createMessage(Messages.instance.common.searchNoResults.fill("query" to title))
             }
         }
 
