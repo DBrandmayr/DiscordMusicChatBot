@@ -20,7 +20,7 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
         return
     }
 
-    val systemMessage = getSystemMessage(botSystemPrompt)
+    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled)
 
     val userMessage = formatMessage(message) ?: return
 

@@ -9,9 +9,8 @@ import java.io.File
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class Config(
     val bot: BotConfig = BotConfig(),
-    val lavalink: LavalinkConfig = LavalinkConfig(),
-    val openai: OpenaiConfig = OpenaiConfig(),
     val chatbot: ChatbotConfig = ChatbotConfig(),
+    val music: MusicConfig = MusicConfig(),
     @field:JsonProperty("command-names") val commandNames: CommandNames = CommandNames()
 ) {
     companion object {
@@ -48,7 +47,13 @@ data class OpenaiConfig(
 
 data class ChatbotConfig(
     val enabled: Boolean = true,
-    val systemPrompt: String = "You are a helpful and friendly Discord bot assistant. Answer questions, help with tasks, and keep the conversation fun and engaging."
+    val systemPrompt: String = "You are a helpful and friendly Discord bot assistant. Answer questions, help with tasks, and keep the conversation fun and engaging.",
+    val openai: OpenaiConfig = OpenaiConfig()
+)
+
+data class MusicConfig(
+    val enabled: Boolean = true,
+    val lavalink: LavalinkConfig = LavalinkConfig()
 )
 
 data class CommandNames(
