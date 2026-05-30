@@ -44,7 +44,8 @@ suspend fun main(args: Array<String>) {
     LavalinkManager.connect(
         host = config.lavalink.host,
         port = config.lavalink.port,
-        password = config.lavalink.password
+        password = config.lavalink.password,
+        secure = config.lavalink.secure
     )
 
     kord.on<ReadyEvent> {

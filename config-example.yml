@@ -10,6 +10,7 @@ lavalink:
   host: "localhost"
   port: 2333
   password: "youshallnotpass"
+  secure: false    # Set to true if using SSL
 
 openai:
   key: "KEY_HERE"

@@ -29,12 +29,13 @@ object LavalinkManager {
      * @param port The port on which the Lavalink node is listening.
      * @param password The password used for authentication with the Lavalink node.
      */
-    fun connect(host: String, port: Int, password: String) {
+    fun connect(host: String, port: Int, password: String, secure: Boolean = false) {
+        val scheme = if (secure) "wss" else "ws"
         CoroutineScope(Dispatchers.IO).launch {
             repeat(15) { attempt ->
                 try {
                     Socket().use { it.connect(InetSocketAddress(host, port), 1000) }
-                    lavalink.addNode("ws://$host:$port", password)
+                    lavalink.addNode("$scheme://$host:$port", password)
                     println("Connected to Lavalink.")
                     return@launch
                 } catch (_: ConnectException) {

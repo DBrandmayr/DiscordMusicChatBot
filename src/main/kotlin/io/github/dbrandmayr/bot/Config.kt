@@ -36,7 +36,8 @@ data class BotConfig(
 data class LavalinkConfig(
     val host: String = "localhost",
     val port: Int = 2333,
-    val password: String = "youshallnotpass"
+    val password: String = "youshallnotpass",
+    val secure: Boolean = false
 )
 
 data class OpenaiConfig(
