@@ -23,8 +23,42 @@ It requires a connection to a [Lavalink](https://github.com/lavalink-devs/Lavali
 
 - Java 21+
 - A [Discord bot token](https://discord.com/developers/applications)
-- **For music playback:** A running and configured (preferably with [YouTube support](https://github.com/lavalink-devs/youtube-source)) [Lavalink](https://github.com/lavalink-devs/Lavalink) server
+- **For music playback:** A running [Lavalink](https://github.com/lavalink-devs/Lavalink) server with YouTube support, see [Lavalink: YouTube Support Setup](#lavalink-youtube-support-setup) below
 - **For AI chat:** Access to an OpenAI-compatible API (e.g. [OpenAI](https://platform.openai.com/docs), [Google Gemini](https://ai.google.dev/gemini-api/docs/openai), [LM Studio](https://lmstudio.ai/docs/developer/openai-compat))
+
+## Lavalink: YouTube Support Setup
+
+YouTube playback requires one of these Lavalink plugins:
+
+| Plugin | Notes |
+|---|---|
+| [LavaSrc](https://github.com/topi314/LavaSrc) + [yt-dlp](https://github.com/yt-dlp/yt-dlp) | Recommended - uses yt-dlp as backend, no token setup needed |
+| [youtube-source](https://github.com/lavalink-devs/youtube-source) | Official plugin; requires OAuth or poToken for reliable access |
+
+### For LavaSrc with yt-dlp
+
+1. [Install yt-dlp](https://github.com/yt-dlp/yt-dlp#installation) — available in most Linux package managers.
+
+2. Add the following to Lavalink's `application.yml` (replace `x.y.z` with the [latest version](https://github.com/topi314/LavaSrc/releases/latest)):
+```yaml
+lavalink:
+  plugins:
+    - dependency: "com.github.topi314.lavasrc:lavasrc-plugin:x.y.z"
+
+# ...
+
+plugins:
+  lavasrc:
+    sources:
+      ytdlp: true
+    ytdlp:
+      path: "yt-dlp"
+```
+Lavalink will download the plugin automatically on first start.
+
+For full configuration options, see the LavaSrc [README](https://github.com/topi314/LavaSrc/blob/master/README.md).
+
+---
 
 ## Quick Start (Recommended)
 
