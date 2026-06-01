@@ -1,6 +1,5 @@
 package io.github.dbrandmayr.bot.chatbot
 
-import io.github.dbrandmayr.bot.musicbot.getGuildId
 import dev.arbjerg.lavalink.protocol.v4.LoadResult
 import dev.kord.core.event.message.MessageCreateEvent
 import dev.schlaubi.lavakord.audio.Link
@@ -9,6 +8,7 @@ import io.github.dbrandmayr.bot.Messages
 import io.github.dbrandmayr.bot.fill
 import io.github.dbrandmayr.bot.formatAddedTracks
 import io.github.dbrandmayr.bot.musicbot.LavalinkManager
+import io.github.dbrandmayr.bot.musicbot.getGuildId
 import kotlinx.serialization.Serializable
 
 @Serializable

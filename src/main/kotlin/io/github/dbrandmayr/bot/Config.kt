@@ -42,7 +42,9 @@ data class LavalinkConfig(
 data class OpenaiConfig(
     val key: String = "",
     val model: String = "",
-    var completionsUrl: String = "https://api.openai.com/v1/chat/completions"
+    var completionsUrl: String = "https://api.openai.com/v1/chat/completions",
+    val useBase64Images: Boolean = false,
+    val timeoutSeconds: Long = 15
 )
 
 data class ChatbotConfig(
