@@ -22,6 +22,10 @@ interface BotCommand{
     suspend fun execute(args: List<String>, event: MessageCreateEvent): String?
 }
 
+val botCommands: Map<String, BotCommand> = listOf(
+    PlayBotCommand()
+).associateBy { it.name }
+
 class PlayBotCommand : BotCommand {
     override val name: String = "play"
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) : String? {

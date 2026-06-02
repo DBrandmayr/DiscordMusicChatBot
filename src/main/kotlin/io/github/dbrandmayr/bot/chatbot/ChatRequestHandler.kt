@@ -24,16 +24,16 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
         return
     }
 
-    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled)
-    val userMessage = formatMessage(message) ?: return
-    val chatHistory = getChatHistory(guildId)
-
     val useBase64 = Config.instance.chatbot.openai.useBase64Images
     val imageUrls = message.attachments
         .filter { it.contentType?.startsWith("image/") == true }
         .map { attachment ->
             if (useBase64) resolveImageFromUrl(attachment.url) else attachment.url
         }
+
+    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled, imageUrls.isNotEmpty())
+    val userMessage = formatMessage(message) ?: return
+    val chatHistory = getChatHistory(guildId)
 
     val userContent: Any = if (imageUrls.isEmpty()) {
         userMessage
@@ -52,9 +52,10 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
 
     try {
         val response = chatClient.sendMessage(queryMessages)
-        addToChatHistory(guildId, ChatBotMessage("user", userMessage))
+        val (convResponse, imageDescription) = resolveAndExecuteResponseCommands(response, event)
+        val storedUserMessage = if (imageDescription != null) "$userMessage\n[Image: $imageDescription]" else userMessage
+        addToChatHistory(guildId, ChatBotMessage("user", storedUserMessage))
         addToChatHistory(guildId, ChatBotMessage("assistant", response))
-        val convResponse = resolveAndExecuteResponseCommands(response, event)
         channel.createMessage(convResponse)
     } catch (e: Exception) {
         channel.createMessage("I wasn't able to respond to that. Please try again.")
@@ -68,21 +69,32 @@ private suspend fun resolveImageFromUrl(url: String): String {
     return "data:image/png;base64,$base64"
 }
 
-suspend fun resolveAndExecuteResponseCommands(answer: String, event: MessageCreateEvent): String{
-    val jsonRegex = """\{.*}""".toRegex()
-    val commandJson = jsonRegex.find(answer)?.value ?: return answer
-    try {
-        val botCommand = Json.decodeFromString<BotCommandClass>(commandJson)
-        val commandResult = when (botCommand.command) {
-            "play" -> PlayBotCommand().execute(botCommand.args, event)
-            else -> null
+suspend fun resolveAndExecuteResponseCommands(response: String, event: MessageCreateEvent): Pair<String, String?> {
+    val jsonRegex = """\{.*?}""".toRegex()
+    val matches = jsonRegex.findAll(response).toList()
+    if (matches.isEmpty()) return Pair(response, null)
+
+    var result = response
+    var imageDescription: String? = null
+
+    for (match in matches) {
+        val commandJson = match.value
+        try {
+            val botCommand = Json.decodeFromString<BotCommandClass>(commandJson)
+            val commandResult = when (botCommand.command) {
+                "describe_image" -> {
+                    imageDescription = botCommand.args.firstOrNull()
+                    null
+                }
+                else -> botCommands[botCommand.command]?.execute(botCommand.args, event)
+            }
+            result = result.replace(commandJson, commandResult ?: "")
+        } catch (e: Exception) {
+            println("Failed to parse Command JSON: ${e.message}")
         }
-        if (commandResult != null) return answer.replace(commandJson, commandResult)
-    }catch (e: Exception){
-        println("Failed to parse Command JSON: ${e.message}")
     }
 
-    return answer.replace(commandJson, "")
+    return Pair(result, imageDescription)
 }
 
 suspend fun resolveMentionNames(messageContent: String, guild: Guild): String {
