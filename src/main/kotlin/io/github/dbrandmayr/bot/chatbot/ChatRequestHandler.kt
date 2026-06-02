@@ -5,9 +5,13 @@ import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import dev.kord.core.event.message.MessageCreateEvent
 import io.github.dbrandmayr.bot.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
+import java.net.URI
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.*
 import kotlin.time.toJavaInstant
 
 
@@ -20,21 +24,39 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
         return
     }
 
-    val systemMessage = getSystemMessage(botSystemPrompt)
+    val useBase64 = Config.instance.chatbot.openai.useBase64Images
+    val imageUrls = message.attachments
+        .filter { it.contentType?.startsWith("image/") == true }
+        .map { attachment ->
+            if (useBase64) resolveImageFromUrl(attachment.url) else attachment.url
+        }
+    val processImages = imageUrls.isNotEmpty() && Config.instance.chatbot.allowImages
 
+    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled, processImages)
     val userMessage = formatMessage(message) ?: return
-
     val chatHistory = getChatHistory(guildId)
 
-    val queryMessages = mutableListOf(ChatBotMessage(role = "system", content = systemMessage))
-    queryMessages.addAll(chatHistory)
-    queryMessages.add(ChatBotMessage(role = "user", content = userMessage))
+    val userContent: Any = if (!processImages) {
+        userMessage
+    } else {
+        buildList {
+            add(TextPart(text = userMessage))
+            imageUrls.forEach { add(ImageUrlPart(imageUrl = mapOf("url" to it))) }
+        }
+    }
+
+    val queryMessages = buildList {
+        add(ApiMessage(role = "system", content = systemMessage))
+        addAll(chatHistory.map { ApiMessage(it.role, it.content) })
+        add(ApiMessage(role = "user", content = userContent))
+    }
 
     try {
         val response = chatClient.sendMessage(queryMessages)
-        addToChatHistory(guildId, ChatBotMessage("user", userMessage))
+        val (convResponse, imageDescription) = resolveAndExecuteResponseCommands(response, event)
+        val storedUserMessage = if (imageDescription != null) "$userMessage\n[Image: $imageDescription]" else userMessage
+        addToChatHistory(guildId, ChatBotMessage("user", storedUserMessage))
         addToChatHistory(guildId, ChatBotMessage("assistant", response))
-        val convResponse = resolveAndExecuteResponseCommands(response, event)
         channel.createMessage(convResponse)
     } catch (e: Exception) {
         channel.createMessage("I wasn't able to respond to that. Please try again.")
@@ -42,21 +64,38 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
     }
 }
 
-suspend fun resolveAndExecuteResponseCommands(answer: String, event: MessageCreateEvent): String{
-    val jsonRegex = """\{.*}""".toRegex()
-    val commandJson = jsonRegex.find(answer)?.value ?: return answer
-    try {
-        val botCommand = Json.decodeFromString<BotCommandClass>(commandJson)
-        val commandResult = when (botCommand.command) {
-            "play" -> PlayBotCommand().execute(botCommand.args, event)
-            else -> null
+private suspend fun resolveImageFromUrl(url: String): String {
+    val bytes = withContext(Dispatchers.IO) { URI.create(url).toURL().readBytes() }
+    val base64 = Base64.getEncoder().encodeToString(bytes)
+    return "data:image/png;base64,$base64"
+}
+
+suspend fun resolveAndExecuteResponseCommands(response: String, event: MessageCreateEvent): Pair<String, String?> {
+    val jsonRegex = """\{.*?}""".toRegex()
+    val matches = jsonRegex.findAll(response).toList()
+    if (matches.isEmpty()) return Pair(response, null)
+
+    var result = response
+    var imageDescription: String? = null
+
+    for (match in matches) {
+        val commandJson = match.value
+        try {
+            val botCommand = Json.decodeFromString<BotCommandClass>(commandJson)
+            val commandResult = when (botCommand.command) {
+                "describe_image" -> {
+                    imageDescription = botCommand.args.firstOrNull()
+                    null
+                }
+                else -> botCommands[botCommand.command]?.execute(botCommand.args, event)
+            }
+            result = result.replace(commandJson, commandResult ?: "")
+        } catch (e: Exception) {
+            println("Failed to parse Command JSON: ${e.message}")
         }
-        if (commandResult != null) return answer.replace(commandJson, commandResult)
-    }catch (e: Exception){
-        println("Failed to parse Command JSON: ${e.message}")
     }
 
-    return answer.replace(commandJson, "")
+    return Pair(result, imageDescription)
 }
 
 suspend fun resolveMentionNames(messageContent: String, guild: Guild): String {

@@ -27,11 +27,14 @@ lateinit var commands: List<Command> private set
 suspend fun main(args: Array<String>) {
     val configPath = args.firstOrNull() ?: "config.yml"
     val config = Config.load(configPath)
-    commands = funCommands + musicCommands + queueCommands + listOf(HelpCommand)
+    val musicEnabled = config.music.enabled
+    commands = funCommands +
+        (if (musicEnabled) musicCommands + queueCommands else emptyList()) +
+        listOf(HelpCommand)
     val duplicates = findDuplicateCommandNames(commands)
     if (duplicates.isNotEmpty()) println("[33mWarning: duplicate command names detected: ${duplicates.joinToString(", ")}[0m")
     Messages.load(args.getOrNull(1) ?: "messages.yml")
-    chatClient = ChatGptClient(config.openai.key)
+    chatClient = ChatGptClient(config.chatbot.openai.key)
     botSystemPrompt = config.chatbot.systemPrompt
     prefixes = config.bot.prefixes
 
@@ -42,9 +45,10 @@ suspend fun main(args: Array<String>) {
     val kord = Kord(config.bot.token)
     LavalinkManager.initialize(kord.lavakord())
     LavalinkManager.connect(
-        host = config.lavalink.host,
-        port = config.lavalink.port,
-        password = config.lavalink.password
+        host = config.music.lavalink.host,
+        port = config.music.lavalink.port,
+        password = config.music.lavalink.password,
+        secure = config.music.lavalink.secure
     )
 
     kord.on<ReadyEvent> {

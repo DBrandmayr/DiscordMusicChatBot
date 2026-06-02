@@ -1,8 +1,7 @@
 package io.github.dbrandmayr.bot.chatbot
 
-fun getSystemMessage(customPrompt: String): String = """
-    $customPrompt
-
+fun getSystemMessage(customPrompt: String, musicEnabled: Boolean, hasImages: Boolean = false): String {
+    val musicSection = if (musicEnabled) """
     Because this bot is also a music bot, there might be instances where a user intended to write
     a music command but mistyped it; in such cases, let them know politely.
 
@@ -11,7 +10,19 @@ fun getSystemMessage(customPrompt: String): String = """
     {"command": "play", "args": ["song title 1", "song title 2"]}
     Add as many or as few entries to "args" as needed. The play command automatically queues tracks.
     The args are searched on YouTube, so use specific search terms (e.g. artist and song title) for best results.
+    """
+    else ""
 
+    val imageSection = if (hasImages) """
+    The user's message includes one or more image attachments. Include this JSON command anywhere in your response so a description is saved for future context:
+    {"command": "describe_image", "args": ["brief one-sentence description of the image(s)"]}
+    """
+    else ""
+
+    return """
+    $customPrompt
+    $musicSection
+    $imageSection
     Each user message will arrive with metadata in this format:
     [HH:mm] <GuildNickname> (@DiscordUsername) | #<channel>: <message>
 
@@ -20,4 +31,5 @@ fun getSystemMessage(customPrompt: String): String = """
 
     You always respond in the channel the last message came from.
     Important: do NOT echo or reproduce the metadata format in your responses.
-""".trimIndent()
+    """.trimIndent()
+}
