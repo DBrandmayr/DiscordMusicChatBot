@@ -30,12 +30,13 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
         .map { attachment ->
             if (useBase64) resolveImageFromUrl(attachment.url) else attachment.url
         }
+    val processImages = imageUrls.isNotEmpty() && Config.instance.chatbot.allowImages
 
-    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled, imageUrls.isNotEmpty())
+    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled, processImages)
     val userMessage = formatMessage(message) ?: return
     val chatHistory = getChatHistory(guildId)
 
-    val userContent: Any = if (imageUrls.isEmpty()) {
+    val userContent: Any = if (!processImages) {
         userMessage
     } else {
         buildList {

@@ -17,6 +17,7 @@ music:
 
 chatbot:
   enabled: true
+  #allowImages: true           # default, set to false to ignore image attachments
   openai:
     key: "KEY_HERE"
     model: "gpt-4.1"

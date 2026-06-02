@@ -49,6 +49,7 @@ data class OpenaiConfig(
 
 data class ChatbotConfig(
     val enabled: Boolean = true,
+    val allowImages: Boolean = true,
     val systemPrompt: String = "You are a helpful and friendly Discord bot assistant. Answer questions, help with tasks, and keep the conversation fun and engaging.",
     val openai: OpenaiConfig = OpenaiConfig()
 )
