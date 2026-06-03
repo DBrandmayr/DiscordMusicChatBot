@@ -130,7 +130,7 @@ object SkipCommand : Command {
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
         val musicManager = getMusicManager(getGuildId(event))
-        val track = musicManager.currentTrack
+        val track = musicManager.currentTrack()
         if (track != null) {
             channel.createMessage(Messages.instance.music.skip.skipped.fill("title" to track.info.title))
             musicManager.skip()
@@ -148,7 +148,7 @@ object PlayingCommand : Command {
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
         val musicManager = getMusicManager(getGuildId(event))
-        val playingTrack = musicManager.currentTrack ?: run {
+        val playingTrack = musicManager.currentTrack() ?: run {
             channel.createMessage(Messages.instance.common.nothingPlaying)
             return
         }
@@ -186,7 +186,7 @@ object ReplayCommand : Command {
             }
         }
         val replayList = List(replayAmount) { replayTrack }
-        if (musicManager.currentTrack != null) {
+        if (musicManager.currentTrack() != null) {
             musicManager.trackQueue.addAll(0, replayList)
         } else {
             musicManager.playTrack(replayList[0])
@@ -213,7 +213,7 @@ object SeekCommand : Command {
             channel.createMessage(Messages.instance.music.seek.noTimeProvided)
             return
         }
-        if (musicManager.currentTrack == null) {
+        val track = musicManager.currentTrack() ?: run {
             channel.createMessage(Messages.instance.common.nothingPlaying)
             return
         }
@@ -221,7 +221,7 @@ object SeekCommand : Command {
             channel.createMessage(Messages.instance.music.seek.invalidTimeFormat)
             return
         }
-        if (timeMillis < 0 || timeMillis > (musicManager.currentTrack?.info?.length ?: 0)) {
+        if (timeMillis < 0 || timeMillis > track.info.length) {
             channel.createMessage(Messages.instance.music.seek.timeOutOfRange)
             return
         }
