@@ -10,9 +10,13 @@ import dev.schlaubi.lavakord.audio.player.applyFilters
 import dev.schlaubi.lavakord.rest.getPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TimeSource
 
 
 class GuildMusicManager(val link: Link) {
@@ -20,6 +24,13 @@ class GuildMusicManager(val link: Link) {
     private val queueMutex = Mutex()
     private val trackQueue: MutableList<Track> = mutableListOf()
     var replayTrack: Track? = null
+
+    /** How often the safety net checks whether a stalled queue needs kicking. Doubles as the worst-case silence gap. */
+    private val reconcileInterval = 30.seconds
+
+    /** Right after we start a track, Lavalink's REST view may briefly still report `null`; ignore reconciles within this window so we never double-advance. */
+    private val playGracePeriod = 3.seconds
+    private var lastPlayMark = TimeSource.Monotonic.markNow()
 
     /** Outcome of an [insertIntoQueue] call, so callers can pick the right user-facing message. */
     enum class InsertResult { INSERTED, QUEUE_EMPTY, OUT_OF_RANGE }
@@ -50,9 +61,20 @@ class GuildMusicManager(val link: Link) {
             if (reason.mayStartNext) {
                 queueMutex.withLock {
                     if (trackQueue.isNotEmpty()) {
-                        player.playTrack(trackQueue.removeAt(0))
+                        playNow(trackQueue.removeAt(0))
                     }
                 }
+            }
+        }
+
+        // Safety net: the TrackEndEvent above is the fast, gapless path, but the Lavalink event
+        // websocket can silently die on a reconnect (REST keeps working, events stop). Without this
+        // loop a single missed event would stall the queue forever. Gated on an empty-queue check so
+        // idle guilds never touch the network regardless of the interval.
+        CoroutineScope(Dispatchers.Default).launch {
+            while (isActive) {
+                delay(reconcileInterval)
+                ensurePlaying()
             }
         }
     }
@@ -70,9 +92,28 @@ class GuildMusicManager(val link: Link) {
                 trackQueue.add(track)
                 false
             } else {
-                player.playTrack(track)
+                playNow(track)
                 true
             }
+        }
+    }
+
+    /** Starts [track] and records the moment, so the reconcile loop won't double-advance during the grace window. Caller must hold [queueMutex]. */
+    private suspend fun playNow(track: Track) {
+        player.playTrack(track)
+        lastPlayMark = TimeSource.Monotonic.markNow()
+    }
+
+    /**
+     * Safety net against a dead event stream: if the queue has tracks but Lavalink reports nothing
+     * playing, start the next one. The empty-queue check short-circuits before any REST call, so this
+     * is free for idle guilds.
+     */
+    suspend fun ensurePlaying() = queueMutex.withLock {
+        if (trackQueue.isEmpty()) return@withLock
+        if (lastPlayMark.elapsedNow() < playGracePeriod) return@withLock
+        if (currentTrack() == null) {
+            playNow(trackQueue.removeAt(0))
         }
     }
 
@@ -86,7 +127,7 @@ class GuildMusicManager(val link: Link) {
     suspend fun skip() {
         queueMutex.withLock {
             if (trackQueue.isNotEmpty()) {
-                player.playTrack(trackQueue.removeAt(0))
+                playNow(trackQueue.removeAt(0))
             } else {
                 player.stopTrack()
             }

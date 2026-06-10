@@ -93,7 +93,9 @@ object ResumeCommand : Command {
     override val description = "Resumes the current track"
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
-        getPlayer(event).pause(false)
+        val musicManager = getMusicManager(getGuildId(event))
+        musicManager.ensurePlaying() // self-heal a stalled queue on resume
+        musicManager.player.pause(false)
         event.message.channel.createMessage(Messages.instance.music.resume.resumed)
     }
 }
@@ -148,6 +150,7 @@ object PlayingCommand : Command {
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
         val musicManager = getMusicManager(getGuildId(event))
+        musicManager.ensurePlaying() // self-heal a stalled queue when the user checks what's playing
         val playingTrack = musicManager.currentTrack() ?: run {
             channel.createMessage(Messages.instance.common.nothingPlaying)
             return
