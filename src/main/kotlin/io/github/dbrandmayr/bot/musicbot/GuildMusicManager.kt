@@ -18,8 +18,11 @@ import kotlinx.coroutines.sync.withLock
 class GuildMusicManager(val link: Link) {
     val player: Player = link.player
     private val queueMutex = Mutex()
-    val trackQueue: MutableList<Track> = mutableListOf()
+    private val trackQueue: MutableList<Track> = mutableListOf()
     var replayTrack: Track? = null
+
+    /** Outcome of an [insertIntoQueue] call, so callers can pick the right user-facing message. */
+    enum class InsertResult { INSERTED, QUEUE_EMPTY, OUT_OF_RANGE }
 
     /**
      * The track Lavalink is actually playing right now, queried live from the node.
@@ -29,6 +32,8 @@ class GuildMusicManager(val link: Link) {
      * event stream. The track events below are used purely as triggers, never as state.
      */
     suspend fun currentTrack(): Track? = link.node.getPlayer(link.guildId).track
+    suspend fun currentPosition(): Long?  = currentTrack()?.info?.position
+
 
     init {
         CoroutineScope(Dispatchers.Default).launch {
@@ -98,5 +103,45 @@ class GuildMusicManager(val link: Link) {
 
     suspend fun getQueueSnapshot(): List<Track> = queueMutex.withLock {
         trackQueue.toList()
+    }
+
+    /** Appends [tracks] to the end of the queue. */
+    suspend fun addToQueue(tracks: List<Track>) = queueMutex.withLock {
+        trackQueue.addAll(tracks)
+        Unit
+    }
+
+    /** Prepends [tracks] so they play before everything currently queued. */
+    suspend fun addToQueueFront(tracks: List<Track>) = queueMutex.withLock {
+        trackQueue.addAll(0, tracks)
+        Unit
+    }
+
+    /** Shuffles the queue. Returns `false` if the queue was empty. */
+    suspend fun shuffleQueue(): Boolean = queueMutex.withLock {
+        if (trackQueue.isEmpty()) return@withLock false
+        trackQueue.shuffle()
+        true
+    }
+
+    /**
+     * Inserts [tracks] at the 1-based [position], with the bounds check performed atomically under
+     * the lock so the position cannot become stale between validation and insertion.
+     */
+    suspend fun insertIntoQueue(position: Int, tracks: List<Track>): InsertResult = queueMutex.withLock {
+        when {
+            trackQueue.isEmpty() -> InsertResult.QUEUE_EMPTY
+            position < 1 || position > trackQueue.size -> InsertResult.OUT_OF_RANGE
+            else -> {
+                trackQueue.addAll(position - 1, tracks)
+                InsertResult.INSERTED
+            }
+        }
+    }
+
+    /** Removes and returns the track at the 1-based [position], or `null` if it is out of range. */
+    suspend fun removeFromQueue(position: Int): Track? = queueMutex.withLock {
+        if (position < 1 || position > trackQueue.size) null
+        else trackQueue.removeAt(position - 1)
     }
 }

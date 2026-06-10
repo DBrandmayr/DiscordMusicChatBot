@@ -53,7 +53,7 @@ object PlayCommand : Command {
                 val firstTrack = loadResult.data.tracks.first()
                 val remaining = loadResult.data.tracks.drop(1)
                 musicManager.playTrack(firstTrack)
-                musicManager.trackQueue.addAll(remaining)
+                musicManager.addToQueue(remaining)
                 musicManager.replayTrack = firstTrack
                 channel.createMessage(Messages.instance.music.play.nowPlayingPlaylist.fill(
                     "title" to firstTrack.info.title,
@@ -152,7 +152,7 @@ object PlayingCommand : Command {
             channel.createMessage(Messages.instance.common.nothingPlaying)
             return
         }
-        val livePosition = musicManager.link.player.position
+        val livePosition = musicManager.currentPosition() ?: -1L
         channel.createMessage(Messages.instance.music.playing.nowPlaying.fill(
             "title" to playingTrack.info.title,
             "position" to formatDuration(livePosition),
@@ -187,10 +187,10 @@ object ReplayCommand : Command {
         }
         val replayList = List(replayAmount) { replayTrack }
         if (musicManager.currentTrack() != null) {
-            musicManager.trackQueue.addAll(0, replayList)
+            musicManager.addToQueueFront(replayList)
         } else {
             musicManager.playTrack(replayList[0])
-            musicManager.trackQueue.addAll(0, replayList.drop(1))
+            musicManager.addToQueueFront(replayList.drop(1))
         }
         channel.createMessage(Messages.instance.music.replay.willPlayNext.fill("title" to replayTrack.info.title))
     }

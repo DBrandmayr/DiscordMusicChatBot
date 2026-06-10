@@ -90,7 +90,6 @@ queue:
   remove:
     positionMustBePositive: "Position must be greater than 0."
     removed: "Removed \"***{title}***\" from the queue."   # {title}
-    error: "Something went wrong!"
 
 # -----------------------------------------------------------------------------
 # Fun commands
