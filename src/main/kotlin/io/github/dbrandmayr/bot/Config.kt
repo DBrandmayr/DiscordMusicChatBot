@@ -1,7 +1,6 @@
 package io.github.dbrandmayr.bot
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import tools.jackson.dataformat.yaml.YAMLMapper
 import tools.jackson.module.kotlin.kotlinModule
 import java.io.File
@@ -11,7 +10,7 @@ data class Config(
     val bot: BotConfig = BotConfig(),
     val chatbot: ChatbotConfig = ChatbotConfig(),
     val music: MusicConfig = MusicConfig(),
-    @field:JsonProperty("command-names") val commandNames: CommandNames = CommandNames()
+    val commandNames: CommandNames = CommandNames()
 ) {
     companion object {
         lateinit var instance: Config private set
@@ -49,7 +48,7 @@ data class OpenaiConfig(
 
 data class SearxngConfig(
     val url: String = "",
-    @field:JsonProperty("max-results") val maxResults: Int = 5
+    val maxResults: Int = 5
 )
 
 data class ChatbotConfig(

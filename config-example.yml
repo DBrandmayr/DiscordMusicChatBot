@@ -30,13 +30,13 @@ chatbot:
     #timeoutSeconds = 15       # default, if the LLM takes longer to respond, increase
   searxng:
     url: "" # insert your SearxNG URL here, leave empty to disable search
-    max-results: 5
+    maxResults: 5
   systemPrompt: |
     You are a helpful and friendly Discord bot assistant.
     Answer questions, help with tasks, and keep the conversation fun and engaging.
     Keep your responses concise and appropriate for a Discord server.
 
-command-names:
+commandNames:
   # First entry is the display name shown in the help embed, the rest are aliases.
   # All entries trigger the command equally.
 
