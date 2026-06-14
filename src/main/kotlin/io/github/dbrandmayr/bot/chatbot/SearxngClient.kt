@@ -30,7 +30,9 @@ class SearxngClient {
 
     suspend fun search(query: String): String {
         val config = Config.instance.chatbot.searxng
-        val encodedQuery = URLEncoder.encode(query, "UTF-8")
+        val encodedQuery = withContext(Dispatchers.IO) {
+            URLEncoder.encode(query, "UTF-8")
+        }
         val url = "${config.url}/search?q=$encodedQuery&format=json"
 
         return withContext(Dispatchers.IO) {
