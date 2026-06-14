@@ -17,7 +17,7 @@ music:
 
 chatbot:
   enabled: true
-  #allowImages: true           # default, set to false to ignore image attachments
+  allowImages: true           # default, set to false to ignore image attachments
   openai:
     key: "KEY_HERE"
     model: "gpt-4.1"
@@ -28,6 +28,9 @@ chatbot:
 
     #useBase64Images: false    # default, set to true if the API expects Base64 encoded images (e.g. LM-Studio)
     #timeoutSeconds = 15       # default, if the LLM takes longer to respond, increase
+  searxng:
+    url: "" # insert your SearxNG URL here, leave empty to disable search
+    max-results: 5
   systemPrompt: |
     You are a helpful and friendly Discord bot assistant.
     Answer questions, help with tasks, and keep the conversation fun and engaging.

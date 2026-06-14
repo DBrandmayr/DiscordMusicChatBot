@@ -31,8 +31,9 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
             if (useBase64) resolveImageFromUrl(attachment.url) else attachment.url
         }
     val processImages = imageUrls.isNotEmpty() && Config.instance.chatbot.allowImages
+    val searchEnabled = Config.instance.chatbot.searxng.url.isNotBlank()
 
-    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled, processImages)
+    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled, processImages, searchEnabled)
     val userMessage = formatMessage(message) ?: return
     val chatHistory = getChatHistory(guildId)
 
@@ -52,7 +53,32 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
     }
 
     try {
-        val response = chatClient.sendMessage(queryMessages)
+        var response = chatClient.sendMessage(queryMessages)
+
+        if (searchEnabled) {
+            var currentMessages = queryMessages
+            repeat(3) {
+                val searchQuery = extractSearchCommand(response) ?: return@repeat
+                try {
+                    val results = searxngClient.search(searchQuery)
+                    val searchResponseString = """ Search results for  "$searchQuery":
+                        $results
+                        
+                    **Respond in the same language the user wrote in and use units which would make sense for the user.  
+                    If the results don't clearly answer the question, search again with a refined query.**
+                    """
+                    currentMessages = currentMessages + listOf(
+                        ApiMessage("assistant", response),
+                        ApiMessage("user", searchResponseString)
+                    )
+                    response = chatClient.sendMessage(currentMessages)
+                } catch (e: Exception) {
+                    println("SearXNG search failed: ${e.message}")
+                    return@repeat
+                }
+            }
+        }
+
         val (convResponse, imageDescription) = resolveAndExecuteResponseCommands(response, event)
         val storedUserMessage = if (imageDescription != null) "$userMessage\n[Image: $imageDescription]" else userMessage
         addToChatHistory(guildId, ChatBotMessage("user", storedUserMessage))
@@ -61,6 +87,17 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
     } catch (e: Exception) {
         channel.createMessage("I wasn't able to respond to that. Please try again.")
         println("Chat API error: ${e.message}")
+    }
+}
+
+private fun extractSearchCommand(response: String): String? {
+    val jsonRegex = """\{.*?}""".toRegex()
+    return jsonRegex.findAll(response).firstNotNullOfOrNull { match ->
+        try {
+            val cmd = Json.decodeFromString<BotCommandClass>(match.value)
+            if (cmd.command == "search") cmd.args.firstOrNull()
+            else null
+        } catch (_: Exception) { null }
     }
 }
 

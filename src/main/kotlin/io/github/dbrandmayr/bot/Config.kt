@@ -47,11 +47,17 @@ data class OpenaiConfig(
     val timeoutSeconds: Long = 15
 )
 
+data class SearxngConfig(
+    val url: String = "",
+    @field:JsonProperty("max-results") val maxResults: Int = 5
+)
+
 data class ChatbotConfig(
     val enabled: Boolean = true,
     val allowImages: Boolean = true,
     val systemPrompt: String = "You are a helpful and friendly Discord bot assistant. Answer questions, help with tasks, and keep the conversation fun and engaging.",
-    val openai: OpenaiConfig = OpenaiConfig()
+    val openai: OpenaiConfig = OpenaiConfig(),
+    val searxng: SearxngConfig = SearxngConfig()
 )
 
 data class MusicConfig(
