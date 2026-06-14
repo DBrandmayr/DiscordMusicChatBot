@@ -1,6 +1,16 @@
 package io.github.dbrandmayr.bot.chatbot
 
-fun getSystemMessage(customPrompt: String, musicEnabled: Boolean, hasImages: Boolean = false, searchEnabled: Boolean = false): String {
+/**
+ * Instruction appended to the user content (not the system prompt) when the message carries images.
+ * Keeping it out of the system prompt keeps that prompt static, so the provider's prefix cache
+ * over the system prompt plus chat history is not invalidated whenever an image is (or isn't) attached.
+ */
+val imageInstruction = """
+    The message includes one or more image attachments. Include this JSON command anywhere in your response so a description is saved for future context:
+    {"command": "describe_image", "args": ["brief one-sentence description of the image(s)"]}
+""".trimIndent()
+
+fun getSystemMessage(customPrompt: String, musicEnabled: Boolean, searchEnabled: Boolean = false): String {
     val musicSection = if (musicEnabled) """
     This bot is also a music bot. To play one or more songs, include this JSON anywhere in your response:
     {"command": "play", "args": ["artist - song title 1", "artist - song title 2"]}
@@ -30,17 +40,10 @@ fun getSystemMessage(customPrompt: String, musicEnabled: Boolean, hasImages: Boo
     - You have a limited number of searches per question, so make each query count.
     """ else ""
 
-    val imageSection = if (hasImages) """
-    The user's message includes one or more image attachments. Include this JSON command anywhere in your response so a description is saved for future context:
-    {"command": "describe_image", "args": ["brief one-sentence description of the image(s)"]}
-    """
-    else ""
-
     return """
     $customPrompt
     $musicSection
     $searchSection
-    $imageSection
     Each user message will arrive with metadata in this format:
     [HH:mm] <GuildNickname> (@DiscordUsername) | #<channel>: <message>
 

@@ -33,7 +33,7 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
     val processImages = imageUrls.isNotEmpty() && Config.instance.chatbot.allowImages
     val searchEnabled = Config.instance.chatbot.searxng.url.isNotBlank()
 
-    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled, processImages, searchEnabled)
+    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled, searchEnabled)
     val userMessage = formatMessage(message) ?: return
     val chatHistory = getChatHistory(guildId)
 
@@ -43,6 +43,7 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
         buildList {
             add(TextPart(text = userMessage))
             imageUrls.forEach { add(ImageUrlPart(imageUrl = mapOf("url" to it))) }
+            add(TextPart(text = imageInstruction))
         }
     }
 
