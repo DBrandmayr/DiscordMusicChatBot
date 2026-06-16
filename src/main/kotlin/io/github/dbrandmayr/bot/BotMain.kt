@@ -10,7 +10,7 @@ import dev.kord.gateway.PrivilegedIntent
 import dev.schlaubi.lavakord.kord.lavakord
 import io.github.dbrandmayr.bot.chatbot.ChatBotMessage
 import io.github.dbrandmayr.bot.chatbot.ChatGptClient
-import io.github.dbrandmayr.bot.chatbot.SearxngClient
+import io.github.dbrandmayr.bot.chatbot.search.SearxngClient
 import io.github.dbrandmayr.bot.chatbot.handleChatRequest
 import io.github.dbrandmayr.bot.chatbot.memory.initDatabase
 import io.github.dbrandmayr.bot.chatbot.memory.loadAllChatHistories

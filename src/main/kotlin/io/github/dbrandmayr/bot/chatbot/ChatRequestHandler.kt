@@ -5,6 +5,9 @@ import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import dev.kord.core.event.message.MessageCreateEvent
 import io.github.dbrandmayr.bot.*
+import io.github.dbrandmayr.bot.chatbot.search.SearchAgentResult
+import io.github.dbrandmayr.bot.chatbot.search.extractSearchArg
+import io.github.dbrandmayr.bot.chatbot.search.runSearchAgent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -14,6 +17,8 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.time.toJavaInstant
 
+// How many separate lookups the bot may delegate per message (e.g. when several distinct facts are needed).
+private const val MAX_SEARCH_ROUNDS = 3
 
 suspend fun handleChatRequest(event: MessageCreateEvent){
     val channel = event.message.channel
@@ -34,6 +39,7 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
     val searchEnabled = Config.instance.chatbot.searxng.url.isNotBlank()
 
     val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled, searchEnabled)
+
     val userMessage = formatMessage(message) ?: return
     val chatHistory = getChatHistory(guildId)
 
@@ -55,52 +61,47 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
 
     try {
         var response = chatClient.sendMessage(queryMessages)
+        var currentMessages = queryMessages
+        val searchQueries = mutableListOf<String>()
 
         if (searchEnabled) {
-            var currentMessages = queryMessages
-            repeat(3) {
-                val searchQuery = extractSearchCommand(response) ?: return@repeat
-                try {
-                    val results = searxngClient.search(searchQuery)
-                    val searchResponseString = """ Search results for  "$searchQuery":
-                        $results
-                        
-                    **Respond in the same language the user wrote in and use units which would make sense for the user.  
-                    If the results don't clearly answer the question, search again with a refined query.**
-                    """
-                    currentMessages = currentMessages + listOf(
-                        ApiMessage("assistant", response),
-                        ApiMessage("user", searchResponseString)
-                    )
-                    response = chatClient.sendMessage(currentMessages)
+            var rounds = 0
+            while (rounds < MAX_SEARCH_ROUNDS) {
+                val task = extractSearchArg(response) ?: break
+                val agentResult = try {
+                    runSearchAgent(task)
                 } catch (e: Exception) {
-                    println("SearXNG search failed: ${e.message}")
-                    return@repeat
+                    println("Search agent failed: ${e.message}")
+                    SearchAgentResult("No information could be retrieved for: $task", emptyList())
                 }
+                searchQueries += agentResult.queries
+                currentMessages = currentMessages + listOf(
+                    ApiMessage("assistant", response),
+                    ApiMessage("user", buildFindingsMessage(task, agentResult.summary))
+                )
+                response = chatClient.sendMessage(currentMessages)
+                rounds++
             }
         }
 
         val (convResponse, imageDescription) = resolveAndExecuteResponseCommands(response, event)
+        val queriesFormatted = formatSearches(searchQueries)
         val storedUserMessage = if (imageDescription != null) "$userMessage\n[Image: $imageDescription]" else userMessage
         addToChatHistory(guildId, ChatBotMessage("user", storedUserMessage))
         addToChatHistory(guildId, ChatBotMessage("assistant", response))
-        channel.createMessage(convResponse)
+        channel.createMessage(queriesFormatted + convResponse)
     } catch (e: Exception) {
         channel.createMessage("I wasn't able to respond to that. Please try again.")
         println("Chat API error: ${e.message}")
     }
 }
 
-private fun extractSearchCommand(response: String): String? {
-    val jsonRegex = """\{.*?}""".toRegex()
-    return jsonRegex.findAll(response).firstNotNullOfOrNull { match ->
-        try {
-            val cmd = Json.decodeFromString<BotCommandClass>(match.value)
-            if (cmd.command == "search") cmd.args.firstOrNull()
-            else null
-        } catch (_: Exception) { null }
-    }
-}
+private fun buildFindingsMessage(task: String, findings: String): String = """
+    Research assistant findings for "$task":
+    $findings
+
+    Now carry out the user's original request using these findings, in character and in the user's language — if they asked you to play or queue songs, include the play command with the real titles you found. If the request still needs you to look something else up first, delegate another lookup; otherwise do not output any search command.
+""".trimIndent()
 
 private suspend fun resolveImageFromUrl(url: String): String {
     val bytes = withContext(Dispatchers.IO) { URI.create(url).toURL().readBytes() }

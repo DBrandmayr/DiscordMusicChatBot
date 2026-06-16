@@ -48,7 +48,10 @@ data class OpenaiConfig(
 
 data class SearxngConfig(
     val url: String = "",
-    val maxResults: Int = 5
+    val maxResults: Int = 5,
+    val model: String = "",          // search-agent model; blank = reuse chatbot.openai.model
+    val maxSearches: Int = 5,        // max searches the research agent may run per task
+    val temperature: Double = 0.3    // lower temperature for focused, deterministic research
 )
 
 data class ChatbotConfig(

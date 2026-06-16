@@ -1,4 +1,4 @@
-package io.github.dbrandmayr.bot.chatbot
+package io.github.dbrandmayr.bot.chatbot.search
 
 import io.github.dbrandmayr.bot.Config
 import kotlinx.coroutines.Dispatchers
