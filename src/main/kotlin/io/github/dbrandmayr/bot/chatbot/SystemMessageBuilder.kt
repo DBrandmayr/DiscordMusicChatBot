@@ -17,6 +17,12 @@ fun getSystemMessage(customPrompt: String, musicEnabled: Boolean, searchEnabled:
     - One entry in "args" per song; add as many as the user asked for.
     - Args are searched on YouTube, so be specific (artist + title) for accurate matches.
     - If a user clearly meant a music command but mistyped it, point it out politely.
+
+    When you queue MULTIPLE songs, curate a varied set — do NOT just dump the 3 most obvious hits, and vary your picks from one request to the next:
+    - For a single artist: mix a couple of their signature songs (so listeners recognise something) with lesser-known album tracks and fan favourites. Don't fill the whole queue with chart-toppers.
+    - For a mood or activity (e.g. "music for studying"): spread across different artists, genres and eras that fit the request.
+    - Never add a song you already queued earlier in this same conversation — check the history and pick different ones.
+    - Stay recognisable: choose real, findable songs, not obscure deep cuts nobody knows, so no one ends up asking "what is this?".
     """
     else ""
 
@@ -38,12 +44,22 @@ fun getSystemMessage(customPrompt: String, musicEnabled: Boolean, searchEnabled:
     - If they clearly and completely answer the question: write your normal answer to the user (no more JSON).
     - If they are empty, off-topic, outdated, or ambiguous: do NOT guess. Search again with a CHANGED query — add detail, swap keywords, or rephrase. Never repeat the exact same query.
     - You have a limited number of searches per question, so make each query count.
-    """ else ""
+    """
+    else ""
+    val musicSearchSection = if (musicEnabled && searchEnabled) """
+    Combining music and search: you already know the established catalogue of most artists, 
+    so do NOT search for their well-known or "best" songs — a generic search just hands back the same popular tracks you'd pick anyway. 
+    
+    Search ONLY to discover RECENT releases you cannot know (roughly the last year), and word the query for freshness, not popularity — e.g. "Artist X new single 2026", "Artist X latest album", NOT "Artist X best songs". 
+    A good multi-song queue blends songs you already know with one or two fresh releases found this way.
+    """
+    else ""
 
     return """
     $customPrompt
     $musicSection
     $searchSection
+    $musicSearchSection
     Each user message will arrive with metadata in this format:
     [HH:mm] <GuildNickname> (@DiscordUsername) | #<channel>: <message>
 
