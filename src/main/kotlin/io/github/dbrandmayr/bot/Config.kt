@@ -54,6 +54,7 @@ data class SearxngConfig(
 data class ChatbotConfig(
     val enabled: Boolean = true,
     val allowImages: Boolean = true,
+    val temperature: Double = 0.8,
     val systemPrompt: String = "You are a helpful and friendly Discord bot assistant. Answer questions, help with tasks, and keep the conversation fun and engaging.",
     val openai: OpenaiConfig = OpenaiConfig(),
     val searxng: SearxngConfig = SearxngConfig()

@@ -36,7 +36,7 @@ data class ImageUrlPart(
 data class ChatCompletionRequest(
     val model: String,
     val messages: List<ApiMessage>,
-    val temperature: Double = 0.7
+    val temperature: Double = Config.instance.chatbot.temperature
 )
 
 data class ChatCompletionResponse(

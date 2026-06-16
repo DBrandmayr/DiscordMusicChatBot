@@ -18,6 +18,7 @@ music:
 chatbot:
   enabled: true
   allowImages: true           # default, set to false to ignore image attachments
+  temperature: 0.8            # default, 0.0 - 2.0, higher values make the model more creative, lower values make it more predictable
   openai:
     key: "KEY_HERE"
     model: "gpt-4.1"
