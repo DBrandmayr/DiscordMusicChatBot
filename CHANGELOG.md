@@ -1,5 +1,37 @@
 # Changelog
 
+## [v0.5.0] - 2026-06-19
+
+### Breaking Changes
+
+Renamed `command-names` config key to camelCase `commandNames`.
+
+See the updated [`config-example.yml`](config-example.yml) for the full new structure.
+
+---
+
+### New Features
+
+#### Web Search via SearXNG
+The chatbot can now search the web to answer questions about current events, facts, or anything outside its training data.
+
+- Requires a self-hosted [SearXNG](https://github.com/searxng/searxng) instance
+- Configure the endpoint under `chatbot.searxng` in your config
+- When the bot performs a search, a notice is shown in the Discord channel
+- The bot decides autonomously when a search would improve its answer
+
+#### Configurable Chatbot Temperature
+A new `temperature` option is available under `chatbot.openai` to control how creative or deterministic the AI's responses are. Lower values (e.g. `0.2`) are more focused; higher values (e.g. `1.0`) are more varied.
+
+---
+
+### Bug Fixes
+
+- Fixed music queue stalling indefinitely when the Lavalink event stream drops unexpectedly
+- Fixed a long-standing issue where the bot would report "nothing playing" even while a track was active, the current track is now fetched live from the Lavalink node instead of being cached
+
+---
+
 ## [v0.4.0] - 2026-06-02
 
 ### Breaking Changes

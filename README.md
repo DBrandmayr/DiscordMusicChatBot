@@ -10,6 +10,7 @@ It requires a connection to a [Lavalink](https://github.com/lavalink-devs/Lavali
 - **AI chat** – conversational responses via any OpenAI-compatible API, including the ability to queue music through natural language
 - **Highly customizable** – command names and aliases, all bot response messages, prefixes, AI model, system prompt, and API endpoint — all via YAML files, no code changes needed
 - **Persistent chat history** – per-guild conversation history stored in SQLite, restored on restart
+- **Agentic Web Search** – the AI can decide to search the web when it needs information using [SearXNG](https://github.com/searxng/searxng) 
 
 ## Tech Stack
 
@@ -18,6 +19,7 @@ It requires a connection to a [Lavalink](https://github.com/lavalink-devs/Lavali
 - [Lavalink.kt](https://github.com/kordlib/Lavalink.kt) + [Lavalink](https://github.com/lavalink-devs/Lavalink) – music search and audio playback
 - [Exposed](https://github.com/JetBrains/Exposed) + SQLite – chat history persistence
 - OpenAI-compatible API – AI chat responses
+- [SearXNG](https://github.com/searxng/searxng) – Web Search for the AI
 
 ## Prerequisites
 
@@ -25,6 +27,7 @@ It requires a connection to a [Lavalink](https://github.com/lavalink-devs/Lavali
 - A [Discord bot token](https://discord.com/developers/applications)
 - **For music playback:** A running [Lavalink](https://github.com/lavalink-devs/Lavalink) server with YouTube support, see [Lavalink: YouTube Support Setup](#lavalink-youtube-support-setup) below
 - **For AI chat:** Access to an OpenAI-compatible API (e.g. [OpenAI](https://platform.openai.com/docs), [Google Gemini](https://ai.google.dev/gemini-api/docs/openai), [LM Studio](https://lmstudio.ai/docs/developer/openai-compat))
+- **For AI Web Search:** A running [SearXNG](https://github.com/searxng/searxng) instance
 
 ## Lavalink: YouTube Support Setup
 
