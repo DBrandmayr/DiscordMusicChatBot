@@ -17,7 +17,8 @@ music:
 
 chatbot:
   enabled: true
-  #allowImages: true           # default, set to false to ignore image attachments
+  allowImages: true           # default, set to false to ignore image attachments
+  #temperature: 0.8            # default, 0.0 - 2.0, higher values make the model more creative, lower values make it more predictable
   openai:
     key: "KEY_HERE"
     model: "gpt-4.1"
@@ -25,15 +26,22 @@ chatbot:
     #completionsUrl: "https://api.openai.com/v1/chat/completions"  # ChatGPT, default
     #completionsUrl: "http://127.0.0.1:1234/v1/chat/completions"   # LM Studio
     #completionsUrl: "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"  # Gemini
+    #completionsUrl: "https://openrouter.ai/api/v1/chat/completions" # OpenRouter
 
     #useBase64Images: false    # default, set to true if the API expects Base64 encoded images (e.g. LM-Studio)
     #timeoutSeconds = 15       # default, if the LLM takes longer to respond, increase
+  searxng:
+    url: "" # insert your SearxNG URL here, leave empty to disable search
+    maxResults: 5
+    #model: ""          # optional: separate model for the research agent, empty = reuse chatbot model
+    #maxSearches: 5     # max searches the research agent runs per lookup
+    #temperature: 0.3   # lower = more focused, deterministic research
   systemPrompt: |
     You are a helpful and friendly Discord bot assistant.
     Answer questions, help with tasks, and keep the conversation fun and engaging.
     Keep your responses concise and appropriate for a Discord server.
 
-command-names:
+commandNames:
   # First entry is the display name shown in the help embed, the rest are aliases.
   # All entries trigger the command equally.
 

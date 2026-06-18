@@ -36,7 +36,7 @@ data class ImageUrlPart(
 data class ChatCompletionRequest(
     val model: String,
     val messages: List<ApiMessage>,
-    val temperature: Double = 0.7
+    val temperature: Double = Config.instance.chatbot.temperature
 )
 
 data class ChatCompletionResponse(
@@ -56,12 +56,17 @@ class ChatGptClient(private val apiKey: String) {
         disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
     }
 
-    suspend fun sendMessage(messages: List<ApiMessage>): String {
+    suspend fun sendMessage(
+        messages: List<ApiMessage>,
+        model: String = Config.instance.chatbot.openai.model,
+        temperature: Double = Config.instance.chatbot.temperature
+    ): String {
         val url = Config.instance.chatbot.openai.completionsUrl
         val requestBody = objectMapper.writeValueAsString(
             ChatCompletionRequest(
-                model = Config.instance.chatbot.openai.model,
-                messages = messages
+                model = model,
+                messages = messages,
+                temperature = temperature
             )
         )
 

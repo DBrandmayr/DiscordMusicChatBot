@@ -10,6 +10,7 @@ import dev.kord.gateway.PrivilegedIntent
 import dev.schlaubi.lavakord.kord.lavakord
 import io.github.dbrandmayr.bot.chatbot.ChatBotMessage
 import io.github.dbrandmayr.bot.chatbot.ChatGptClient
+import io.github.dbrandmayr.bot.chatbot.search.SearxngClient
 import io.github.dbrandmayr.bot.chatbot.handleChatRequest
 import io.github.dbrandmayr.bot.chatbot.memory.initDatabase
 import io.github.dbrandmayr.bot.chatbot.memory.loadAllChatHistories
@@ -17,6 +18,7 @@ import io.github.dbrandmayr.bot.chatbot.memory.persistMessage
 import io.github.dbrandmayr.bot.musicbot.*
 
 lateinit var chatClient: ChatGptClient private set
+lateinit var searxngClient: SearxngClient private set
 lateinit var botSystemPrompt: String private set
 lateinit var prefixes: Set<String> private set
 
@@ -35,6 +37,7 @@ suspend fun main(args: Array<String>) {
     if (duplicates.isNotEmpty()) println("[33mWarning: duplicate command names detected: ${duplicates.joinToString(", ")}[0m")
     Messages.load(args.getOrNull(1) ?: "messages.yml")
     chatClient = ChatGptClient(config.chatbot.openai.key)
+    searxngClient = SearxngClient()
     botSystemPrompt = config.chatbot.systemPrompt
     prefixes = config.bot.prefixes
 

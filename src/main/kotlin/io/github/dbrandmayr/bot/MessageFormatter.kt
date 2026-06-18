@@ -15,3 +15,15 @@ fun formatAddedTracks(tracks: List<Pair<String, Long>>): String {
     }
     return "```ansi\n$lines\n```"
 }
+
+fun formatSearches(searches: List<String>): String {
+    if (searches.isEmpty()) return ""
+    val reset = "[0m"
+    val blue = "[2;34m"
+    val gray = "[2;37m"
+
+    val lines = searches.joinToString("\n") { query ->
+        "${blue}[\uD83D\uDD0E] ${gray}\"$query\"$reset"
+    }
+    return "```ansi\n$lines\n```\n"
+}

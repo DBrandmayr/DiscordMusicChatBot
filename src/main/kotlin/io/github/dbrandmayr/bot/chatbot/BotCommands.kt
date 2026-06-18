@@ -62,7 +62,7 @@ class PlayBotCommand : BotCommand {
                     val firstTrack = loadResult.data.tracks.first()
                     val remainingTracks = loadResult.data.tracks.drop(1)
                     musicManager.playTrack(firstTrack)
-                    musicManager.trackQueue.addAll(remainingTracks)
+                    musicManager.addToQueue(remainingTracks)
                     musicManager.replayTrack = firstTrack
                     loadResult.data.tracks.mapTo(addedTracks) { it.info.title to it.info.length }
                 }

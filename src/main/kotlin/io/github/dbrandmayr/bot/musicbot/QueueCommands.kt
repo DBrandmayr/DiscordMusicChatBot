@@ -41,11 +41,10 @@ object ShuffleCommand : Command {
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
         val musicManager = getMusicManager(getGuildId(event))
-        if (musicManager.trackQueue.isEmpty()) {
+        if (!musicManager.shuffleQueue()) {
             channel.createMessage(Messages.instance.common.queueEmpty)
             return
         }
-        musicManager.trackQueue.shuffle()
         channel.createMessage(Messages.instance.queue.shuffle.shuffled)
     }
 }
@@ -63,47 +62,47 @@ object InsertCommand : Command {
             channel.createMessage(Messages.instance.common.notInSameChannel)
             return
         }
-        if (musicManager.trackQueue.isEmpty()) {
-            channel.createMessage(Messages.instance.queue.insert.queueEmpty)
-            return
-        }
         val insertNumber = args.lastOrNull()?.toIntOrNull() ?: run {
             channel.createMessage(Messages.instance.common.invalidPosition)
-            return
-        }
-        if (insertNumber >= musicManager.trackQueue.size + 1) {
-            channel.createMessage(Messages.instance.common.positionOutOfRange)
             return
         }
         val query = args.dropLast(1).joinToString(" ")
         val search = if (query.startsWith("http", ignoreCase = true)) query else "ytsearch:$query"
 
-        when (val loadResult = musicManager.link.loadItem(search)) {
-            is LoadResult.TrackLoaded -> {
-                musicManager.trackQueue.add(insertNumber - 1, loadResult.data)
-                channel.createMessage(Messages.instance.queue.insert.inserted.fill(
+        val (tracks, successMessage) = when (val loadResult = musicManager.link.loadItem(search)) {
+            is LoadResult.TrackLoaded -> listOf(loadResult.data) to
+                Messages.instance.queue.insert.inserted.fill(
                     "title" to loadResult.data.info.title,
                     "position" to insertNumber.toString()
-                ))
-            }
-            is LoadResult.PlaylistLoaded -> {
-                musicManager.trackQueue.addAll(insertNumber - 1, loadResult.data.tracks)
-                channel.createMessage(Messages.instance.queue.insert.insertedPlaylist.fill(
-                    "count" to loadResult.data.tracks.size.toString(),
-                    "position" to insertNumber.toString()
-                ))
-            }
+                )
             is LoadResult.SearchResult -> {
                 val firstTrack = loadResult.data.tracks.first()
-                musicManager.trackQueue.add(insertNumber - 1, firstTrack)
-                channel.createMessage(Messages.instance.queue.insert.inserted.fill(
+                listOf(firstTrack) to Messages.instance.queue.insert.inserted.fill(
                     "title" to firstTrack.info.title,
                     "position" to insertNumber.toString()
-                ))
+                )
             }
-            is LoadResult.NoMatches -> channel.createMessage(Messages.instance.common.searchNoResults.fill("query" to query))
-            is LoadResult.LoadFailed -> channel.createMessage(Messages.instance.common.searchFailed)
+            is LoadResult.PlaylistLoaded -> loadResult.data.tracks to
+                Messages.instance.queue.insert.insertedPlaylist.fill(
+                    "count" to loadResult.data.tracks.size.toString(),
+                    "position" to insertNumber.toString()
+                )
+            is LoadResult.NoMatches -> {
+                channel.createMessage(Messages.instance.common.searchNoResults.fill("query" to query))
+                return
+            }
+            is LoadResult.LoadFailed -> {
+                channel.createMessage(Messages.instance.common.searchFailed)
+                return
+            }
         }
+
+        val message = when (musicManager.insertIntoQueue(insertNumber, tracks)) {
+            GuildMusicManager.InsertResult.INSERTED -> successMessage
+            GuildMusicManager.InsertResult.QUEUE_EMPTY -> Messages.instance.queue.insert.queueEmpty
+            GuildMusicManager.InsertResult.OUT_OF_RANGE -> Messages.instance.common.positionOutOfRange
+        }
+        channel.createMessage(message)
     }
 }
 
@@ -118,21 +117,15 @@ object RemoveCommand : Command {
             channel.createMessage(Messages.instance.common.invalidPosition)
             return
         }
-        val trackQueue = getMusicManager(getGuildId(event)).trackQueue
         if (removeNumber <= 0) {
             channel.createMessage(Messages.instance.queue.remove.positionMustBePositive)
             return
         }
-        if (removeNumber > trackQueue.size) {
+        val removedTrack = getMusicManager(getGuildId(event)).removeFromQueue(removeNumber) ?: run {
             channel.createMessage(Messages.instance.common.positionOutOfRange)
             return
         }
-        try {
-            val removed = trackQueue.removeAt(removeNumber - 1)
-            channel.createMessage(Messages.instance.queue.remove.removed.fill("title" to removed.info.title))
-        } catch (_: IndexOutOfBoundsException) {
-            channel.createMessage(Messages.instance.queue.remove.error)
-        }
+        channel.createMessage(Messages.instance.queue.remove.removed.fill("title" to removedTrack.info.title))
     }
 }
 

@@ -1,7 +1,6 @@
 package io.github.dbrandmayr.bot
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 import tools.jackson.dataformat.yaml.YAMLMapper
 import tools.jackson.module.kotlin.kotlinModule
 import java.io.File
@@ -11,7 +10,7 @@ data class Config(
     val bot: BotConfig = BotConfig(),
     val chatbot: ChatbotConfig = ChatbotConfig(),
     val music: MusicConfig = MusicConfig(),
-    @field:JsonProperty("command-names") val commandNames: CommandNames = CommandNames()
+    val commandNames: CommandNames = CommandNames()
 ) {
     companion object {
         lateinit var instance: Config private set
@@ -47,11 +46,21 @@ data class OpenaiConfig(
     val timeoutSeconds: Long = 15
 )
 
+data class SearxngConfig(
+    val url: String = "",
+    val maxResults: Int = 5,
+    val model: String = "",          // search-agent model; blank = reuse chatbot.openai.model
+    val maxSearches: Int = 5,        // max searches the research agent may run per task
+    val temperature: Double = 0.3    // lower temperature for focused, deterministic research
+)
+
 data class ChatbotConfig(
     val enabled: Boolean = true,
     val allowImages: Boolean = true,
+    val temperature: Double = 0.8,
     val systemPrompt: String = "You are a helpful and friendly Discord bot assistant. Answer questions, help with tasks, and keep the conversation fun and engaging.",
-    val openai: OpenaiConfig = OpenaiConfig()
+    val openai: OpenaiConfig = OpenaiConfig(),
+    val searxng: SearxngConfig = SearxngConfig()
 )
 
 data class MusicConfig(

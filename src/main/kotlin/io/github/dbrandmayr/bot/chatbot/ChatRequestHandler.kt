@@ -5,6 +5,9 @@ import dev.kord.core.entity.Guild
 import dev.kord.core.entity.Message
 import dev.kord.core.event.message.MessageCreateEvent
 import io.github.dbrandmayr.bot.*
+import io.github.dbrandmayr.bot.chatbot.search.SearchAgentResult
+import io.github.dbrandmayr.bot.chatbot.search.extractSearchArg
+import io.github.dbrandmayr.bot.chatbot.search.runSearchAgent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
@@ -14,6 +17,8 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.time.toJavaInstant
 
+// How many separate lookups the bot may delegate per message (e.g. when several distinct facts are needed).
+private const val MAX_SEARCH_ROUNDS = 3
 
 suspend fun handleChatRequest(event: MessageCreateEvent){
     val channel = event.message.channel
@@ -31,8 +36,10 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
             if (useBase64) resolveImageFromUrl(attachment.url) else attachment.url
         }
     val processImages = imageUrls.isNotEmpty() && Config.instance.chatbot.allowImages
+    val searchEnabled = Config.instance.chatbot.searxng.url.isNotBlank()
 
-    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled, processImages)
+    val systemMessage = getSystemMessage(botSystemPrompt, Config.instance.music.enabled, searchEnabled)
+
     val userMessage = formatMessage(message) ?: return
     val chatHistory = getChatHistory(guildId)
 
@@ -42,6 +49,7 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
         buildList {
             add(TextPart(text = userMessage))
             imageUrls.forEach { add(ImageUrlPart(imageUrl = mapOf("url" to it))) }
+            add(TextPart(text = imageInstruction))
         }
     }
 
@@ -52,17 +60,48 @@ suspend fun handleChatRequest(event: MessageCreateEvent){
     }
 
     try {
-        val response = chatClient.sendMessage(queryMessages)
+        var response = chatClient.sendMessage(queryMessages)
+        var currentMessages = queryMessages
+        val searchQueries = mutableListOf<String>()
+
+        if (searchEnabled) {
+            var rounds = 0
+            while (rounds < MAX_SEARCH_ROUNDS) {
+                val task = extractSearchArg(response) ?: break
+                val agentResult = try {
+                    runSearchAgent(task)
+                } catch (e: Exception) {
+                    println("Search agent failed: ${e.message}")
+                    SearchAgentResult("No information could be retrieved for: $task", emptyList())
+                }
+                searchQueries += agentResult.queries
+                currentMessages = currentMessages + listOf(
+                    ApiMessage("assistant", response),
+                    ApiMessage("user", buildFindingsMessage(task, agentResult.summary))
+                )
+                response = chatClient.sendMessage(currentMessages)
+                rounds++
+            }
+        }
+
         val (convResponse, imageDescription) = resolveAndExecuteResponseCommands(response, event)
+        val queriesFormatted = formatSearches(searchQueries)
         val storedUserMessage = if (imageDescription != null) "$userMessage\n[Image: $imageDescription]" else userMessage
         addToChatHistory(guildId, ChatBotMessage("user", storedUserMessage))
         addToChatHistory(guildId, ChatBotMessage("assistant", response))
-        channel.createMessage(convResponse)
+        channel.createMessage(queriesFormatted + convResponse)
     } catch (e: Exception) {
         channel.createMessage("I wasn't able to respond to that. Please try again.")
         println("Chat API error: ${e.message}")
     }
 }
+
+private fun buildFindingsMessage(task: String, findings: String): String = """
+    Research assistant findings for "$task":
+    $findings
+
+    Now carry out the user's original request using these findings, in character and in the user's language — if they asked you to play or queue songs, include the play command with the real titles you found. If the request still needs you to look something else up first, delegate another lookup; otherwise do not output any search command.
+""".trimIndent()
 
 private suspend fun resolveImageFromUrl(url: String): String {
     val bytes = withContext(Dispatchers.IO) { URI.create(url).toURL().readBytes() }

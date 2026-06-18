@@ -140,7 +140,6 @@ data class InsertMessages(
 data class RemoveMessages(
     val positionMustBePositive: String = "Position must be greater than 0.",
     val removed: String = "Removed \"***{title}***\" from the queue.",
-    val error: String = "Something went wrong!"
 )
 
 // Fun
