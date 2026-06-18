@@ -46,7 +46,7 @@ data class SearchAgentResult(val summary: String, val queries: List<String>)
 
 /**
  * Runs the research agent for a single information need. The agent loops internally — search, judge,
- * re-search — up to [SearxngConfig.maxSearches] times, then returns a plain-text factual summary.
+ * re-search — up to [io.github.dbrandmayr.bot.SearxngConfig.maxSearches] times, then returns a plain-text factual summary.
  */
 suspend fun runSearchAgent(task: String): SearchAgentResult {
     val cfg = Config.instance.chatbot.searxng
