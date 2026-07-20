@@ -21,14 +21,19 @@ object QueueCommand : Command {
 
     override suspend fun execute(args: List<String>, event: MessageCreateEvent) {
         val channel = event.message.channel
-        val queue = getMusicManager(getGuildId(event)).getQueueSnapshot()
+        val musicManager = getMusicManager(getGuildId(event))
+        val queue = musicManager.getQueueSnapshot()
+        musicManager.ensurePlaying()
+        val playingTrack = musicManager.currentTrack()
         if (queue.isEmpty()) {
             channel.createMessage(Messages.instance.common.queueEmpty)
             return
         }
+        val nowPlayingLine = playingTrack?.let { "▸ ***${it.info.title}***" }
+        val queueLines = queue.mapIndexed { i, track -> "${i + 1}. **${track.info.title}**" }
         channel.createEmbed {
             title = Messages.instance.queue.list.embedTitle
-            description = queue.mapIndexed { i, track -> "${i + 1}. **${track.info.title}**" }.joinToString("\n")
+            description = listOfNotNull(nowPlayingLine).plus(queueLines).joinToString("\n")
         }
     }
 }
