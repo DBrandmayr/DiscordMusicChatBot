@@ -80,11 +80,16 @@ suspend fun main(args: Array<String>) {
         val args = messageWords.drop(1)
         val command = commands.find { it.names.contains(commandName) }
 
-        if (command != null){
-            command.execute(args, this)
-        } else if (config.chatbot.enabled){
-            // Not a command -> ChatGPT should answer
-            handleChatRequest(this)
+        try {
+            if (command != null){
+                command.execute(args, this)
+            } else if (config.chatbot.enabled){
+                // Not a command -> ChatGPT should answer
+                handleChatRequest(this)
+            }
+        } catch (e: Exception) {
+            System.err.println("Error handling command '$commandName': ${e.message}")
+            e.printStackTrace()
         }
     }
 

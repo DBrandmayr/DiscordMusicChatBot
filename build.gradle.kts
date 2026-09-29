@@ -11,6 +11,10 @@ repositories {
     mavenCentral()
     maven("https://oss.sonatype.org/content/repositories/snapshots")
     maven("https://maven.lavalink.dev/snapshots")
+    maven {
+        name = "kordexMirror"
+        url = uri("https://repo.kordex.dev/mirror")
+    }
 }
 dependencies {
     implementation("tools.jackson.module:jackson-module-kotlin:3.1.3")
@@ -27,7 +31,7 @@ dependencies {
     implementation("org.slf4j:slf4j-nop:2.0.17")
 
     implementation(kotlin("stdlib"))
-    implementation("dev.kord:kord-core:0.18.0")
+    implementation("dev.kord:kord-core:0.19.0-SNAPSHOT")
     implementation("dev.schlaubi.lavakord:kord:9.2.0")
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
