@@ -18,7 +18,6 @@ music:
 chatbot:
   enabled: true
   allowImages: true           # default, set to false to ignore image attachments
-  #temperature: 0.8            # default, 0.0 - 2.0, higher values make the model more creative, lower values make it more predictable
   openai:
     key: "KEY_HERE"
     model: "gpt-4.1"
@@ -30,12 +29,15 @@ chatbot:
 
     #useBase64Images: false    # default, set to true if the API expects Base64 encoded images (e.g. LM-Studio)
     #timeoutSeconds = 15       # default, if the LLM takes longer to respond, increase
+    #temperature: 0.8          # default, 0.0 - 2.0, higher values make the model more creative, lower values make it more predictable
+    #reasoningEffort: "none"   # default, none/minimal/low/medium/high; "none" omits the field (use for models without reasoning support)
   searxng:
     url: "" # insert your SearxNG URL here, leave empty to disable search
     maxResults: 5
-    #model: ""          # optional: separate model for the research agent, empty = reuse chatbot model
+    #model: ""          # optional: separate model for the research agent, empty = reuse chatbot.openai.model
     #maxSearches: 5     # max searches the research agent runs per lookup
     #temperature: 0.3   # lower = more focused, deterministic research
+    #reasoningEffort: ""    # none/minimal/low/medium/high; blank (default) = reuse chatbot.openai.reasoningEffort
   systemPrompt: |
     You are a helpful and friendly Discord bot assistant.
     Answer questions, help with tasks, and keep the conversation fun and engaging.

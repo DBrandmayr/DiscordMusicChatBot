@@ -1,5 +1,6 @@
 package io.github.dbrandmayr.bot.chatbot
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.github.dbrandmayr.bot.Config
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +37,10 @@ data class ImageUrlPart(
 data class ChatCompletionRequest(
     val model: String,
     val messages: List<ApiMessage>,
-    val temperature: Double = Config.instance.chatbot.temperature
+    val temperature: Double = Config.instance.chatbot.openai.temperature,
+    @field:JsonInclude(JsonInclude.Include.NON_NULL)
+    @field:JsonProperty("reasoning_effort")
+    val reasoningEffort: String? = null
 )
 
 data class ChatCompletionResponse(
@@ -59,14 +63,16 @@ class ChatGptClient(private val apiKey: String) {
     suspend fun sendMessage(
         messages: List<ApiMessage>,
         model: String = Config.instance.chatbot.openai.model,
-        temperature: Double = Config.instance.chatbot.temperature
+        temperature: Double = Config.instance.chatbot.openai.temperature,
+        reasoningEffort: String = Config.instance.chatbot.openai.reasoningEffort
     ): String {
         val url = Config.instance.chatbot.openai.completionsUrl
         val requestBody = objectMapper.writeValueAsString(
             ChatCompletionRequest(
                 model = model,
                 messages = messages,
-                temperature = temperature
+                temperature = temperature,
+                reasoningEffort = reasoningEffort.takeIf { it.isNotBlank() && it != "none" }
             )
         )
 

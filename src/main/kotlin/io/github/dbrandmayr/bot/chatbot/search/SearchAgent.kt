@@ -51,6 +51,7 @@ data class SearchAgentResult(val summary: String, val queries: List<String>)
 suspend fun runSearchAgent(task: String): SearchAgentResult {
     val cfg = Config.instance.chatbot.searxng
     val model = cfg.model.ifBlank { Config.instance.chatbot.openai.model }
+    val reasoningEffort = cfg.reasoningEffort.ifBlank { Config.instance.chatbot.openai.reasoningEffort }
     val queries = mutableListOf<String>()
 
     val messages = mutableListOf(
@@ -58,7 +59,7 @@ suspend fun runSearchAgent(task: String): SearchAgentResult {
         ApiMessage("user", "Today's date is ${LocalDate.now()}.\nResearch task: $task")
     )
 
-    var response = chatClient.sendMessage(messages, model = model, temperature = cfg.temperature)
+    var response = chatClient.sendMessage(messages, model = model, temperature = cfg.temperature, reasoningEffort = reasoningEffort)
 
     repeat(cfg.maxSearches) {
         val query = extractSearchArg(response) ?: return SearchAgentResult(response.trim(), queries)
@@ -71,14 +72,14 @@ suspend fun runSearchAgent(task: String): SearchAgentResult {
         }
         messages += ApiMessage("assistant", response)
         messages += ApiMessage("user", "Results for \"$query\":\n$results")
-        response = chatClient.sendMessage(messages, model = model, temperature = cfg.temperature)
+        response = chatClient.sendMessage(messages, model = model, temperature = cfg.temperature, reasoningEffort = reasoningEffort)
     }
 
     // Budget exhausted while the agent still wanted to search — force a plain-text summary.
     if (extractSearchArg(response) != null) {
         messages += ApiMessage("assistant", response)
         messages += ApiMessage("user", "Search budget reached. Report what you found so far in plain text, with no further search commands.")
-        response = chatClient.sendMessage(messages, model = model, temperature = cfg.temperature)
+        response = chatClient.sendMessage(messages, model = model, temperature = cfg.temperature, reasoningEffort = reasoningEffort)
     }
 
     return SearchAgentResult(response.trim(), queries)

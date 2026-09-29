@@ -43,7 +43,9 @@ data class OpenaiConfig(
     val model: String = "",
     var completionsUrl: String = "https://api.openai.com/v1/chat/completions",
     val useBase64Images: Boolean = false,
-    val timeoutSeconds: Long = 15
+    val timeoutSeconds: Long = 15,
+    val temperature: Double = 1.0,
+    val reasoningEffort: String = "none" // none, minimal, low, medium, high; "none" omits the field entirely
 )
 
 data class SearxngConfig(
@@ -51,13 +53,13 @@ data class SearxngConfig(
     val maxResults: Int = 5,
     val model: String = "",          // search-agent model; blank = reuse chatbot.openai.model
     val maxSearches: Int = 5,        // max searches the research agent may run per task
-    val temperature: Double = 0.3    // lower temperature for focused, deterministic research
+    val temperature: Double = 0.3,   // lower temperature for focused, deterministic research
+    val reasoningEffort: String = "" // none, minimal, low, medium, high; blank = reuse chatbot.openai.reasoningEffort
 )
 
 data class ChatbotConfig(
     val enabled: Boolean = true,
     val allowImages: Boolean = true,
-    val temperature: Double = 0.8,
     val systemPrompt: String = "You are a helpful and friendly Discord bot assistant. Answer questions, help with tasks, and keep the conversation fun and engaging.",
     val openai: OpenaiConfig = OpenaiConfig(),
     val searxng: SearxngConfig = SearxngConfig()
