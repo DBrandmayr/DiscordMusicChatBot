@@ -1,5 +1,23 @@
 # Changelog
 
+## [Unreleased]
+
+### Breaking Changes
+
+Moved `temperature` from `chatbot` to `chatbot.openai`. If you have `temperature` set directly under `chatbot` in your config, move it under `chatbot.openai` or it will be silently ignored.
+
+---
+
+### New Features
+
+#### Configurable Reasoning Effort
+A new `reasoningEffort` option is available under `chatbot.openai` (and `chatbot.searxng` for the research agent, where it falls back to `chatbot.openai`'s value when left blank) to control how much reasoning a supporting model applies before responding. Accepts `none`, `minimal`, `low`, `medium`, or `high`; `none` (the default) omits the field entirely, so it is safe to leave unset for models that don't support reasoning effort.
+
+#### Chatbot Temperature Moved
+`temperature` moved from `chatbot` to `chatbot.openai`, alongside the new `reasoningEffort` option and the rest of the model settings.
+
+---
+
 ## [v0.5.0] - 2026-06-19
 
 ### Breaking Changes
